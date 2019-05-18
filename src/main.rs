@@ -526,7 +526,54 @@ fn get_moment(
     c: [u8; 6],
     order: [u8; 3],
 ) -> f64 {
-    return 0.0;
+    let z = za + zb;
+    let e = za * zb / (za + zb);
+    let rp = get_bi_center(za, zb, ra, rb);
+    let ab = get_r12_squared(ra, rb);
+    let aux = get_overlap(za, zb, ra, rb, [0, 0, 0, 0, 0, 0]);
+
+    let prefac = vec![
+        rp[0] - ra[0],
+        rp[0] - rb[0],
+        rp[1] - ra[1],
+        rp[1] - rb[1],
+        rp[2] - ra[2],
+        rp[2] - rb[2],
+        rp[0] - rc[0],
+        rp[1] - rc[1],
+        rp[2] - rc[2],
+        0.5 / z,
+        0.5 / z,
+        0.5 / z,
+    ];
+
+    let q: [i8; 6] = [
+        c[0] as i8, c[1] as i8, c[2] as i8, c[3] as i8, c[4] as i8, c[5] as i8,
+    ];
+    let operator: [i8; 3] = [
+        order[0] as i8, order[1] as i8, order[2] as i8,
+    ];
+
+    let fun = X2 {
+        scale: 1.0,
+        prefactors: vec![],
+        q: q,
+        kind: X2kind::M,
+        operator: operator,
+        d: 0,
+        order: 0,
+    };
+
+    let expansion = apply_os2(fun, X2kind::M);
+    let mut integral = 0.0;
+    for f in expansion.iter() {
+        let mut g = 1.0;
+        for k in f.prefactors.iter() {
+            g *= prefac[*k];
+        }
+        integral += f.scale * aux * g;
+    }
+    return integral;
 }
 
 #[cfg(test)]
