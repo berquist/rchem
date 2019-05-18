@@ -408,7 +408,8 @@ fn apply_os2(mut x: X2, kind: X2kind) -> Vec<X2> {
 
     // If we've hit the base case where all the components are zero,
     // terminate, otherwise recurse through each term.
-    return x_list.iter()
+    return x_list
+        .iter()
         .flat_map(|x2| {
             if x2.orders().iter().all(|&order| order == 0) {
                 vec![x2.clone()]
@@ -463,7 +464,53 @@ fn get_overlap(za: f64, zb: f64, ra: [f64; 3], rb: [f64; 3], c: [u8; 6]) -> f64 
 }
 
 fn get_kinetic(za: f64, zb: f64, ra: [f64; 3], rb: [f64; 3], c: [u8; 6]) -> f64 {
-    return 0.0;
+    let z = za + zb;
+    let e = za * zb / (za + zb);
+    let rp = get_bi_center(za, zb, ra, rb);
+    let ab = get_r12_squared(ra, rb);
+    let aux = (-e * ab).exp() * (PI / z).powf(1.5);
+
+    let prefac = vec![
+        rp[0] - ra[0],
+        rp[0] - rb[0],
+        rp[1] - ra[1],
+        rp[1] - rb[1],
+        rp[2] - ra[2],
+        rp[2] - rb[2],
+        0.5 / z,
+        0.5 / z,
+        2.0 * e,
+        -e / za,
+        -e / zb
+    ];
+
+    let q: [i8; 6] = [
+        c[0] as i8, c[1] as i8, c[2] as i8, c[3] as i8, c[4] as i8, c[5] as i8,
+    ];
+
+    let fun = X2 {
+        scale: 1.0,
+        prefactors: vec![],
+        q: q,
+        kind: X2kind::T,
+        operator: [0, 0, 0],
+        d: 0,
+        order: 0,
+    };
+    let expansion = apply_os2(fun, X2kind::T);
+    let mut integral = 0.0;
+    for f in expansion.iter() {
+        let mut g = match f.kind {
+            X2kind::T => e*(3.0 - 2.0*e*ab),
+            X2kind::S => 1.0,
+            _ => panic!("impossible case")
+        };
+        for k in f.prefactors.iter() {
+            g *= prefac[*k];
+        }
+        integral += f.scale * aux * g;
+    }
+    return integral;
 }
 
 fn get_nuclear(za: f64, zb: f64, ra: [f64; 3], rb: [f64; 3], rc: [f64; 3], c: [u8; 6]) -> f64 {
