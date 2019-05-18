@@ -1,9 +1,11 @@
+#![feature(vec_remove_item)]
 use std::f64::consts::PI;
 
 fn main() {
     println!("Hello, world!");
 }
 
+#[derive(Clone,PartialEq)]
 enum X2kind {
     S,  // overlap
     T,  // kinetic energy
@@ -15,6 +17,7 @@ enum X2kind {
     FC, // Fermi contact (not implemented)
 }
 
+#[derive(Clone)]
 struct X2 {
     scale: f64,
     prefactors: Vec<usize>,
@@ -25,6 +28,7 @@ struct X2 {
     order: u8,
 }
 
+#[derive(Clone)]
 struct X4 {
     scale: f64,
     prefactors: Vec<f64>,
@@ -58,9 +62,9 @@ fn get_r12_squared(r1: [f64; 3], r2: [f64; 3]) -> f64 {
     return (r1[0] - r2[0]).powi(2) + (r1[1] - r2[1]).powi(2) + (r1[2] - r2[2]).powi(2);
 }
 
-fn find_fun_to_lower(q: Vec<u8>) -> usize {
+fn find_fun_to_lower(q: Vec<u8>, n: usize) -> Result<usize, bool> {
     // Determine the total angular momentum on each center.
-    let n = q.len() / 3;
+    // let n = q.len() / 3;
     let mut l = vec!();
     for i in 0..n {
         l.push(q[i * 3] + q[i * 3 + 1] + q[i * 3 + 2])
@@ -68,7 +72,7 @@ fn find_fun_to_lower(q: Vec<u8>) -> usize {
 
     // find function to lower
     // start with lowest angular momentum above s
-    let mut fun = 0;
+    let mut fun: isize = -1;
     let mut kmax = 1 + *l.iter().max().expect("There are no centers?");
 
     for i in 0..n {
@@ -77,26 +81,186 @@ fn find_fun_to_lower(q: Vec<u8>) -> usize {
         if k > 0 {
             if k < kmax {
                 kmax = k;
-                fun = i;
+                fun = i as isize;
             }
         }
     }
-    return fun
+
+    if fun > -1 {
+        return Ok(fun as usize);
+    }
+    return Err(false);
+}
+
+fn find_component_to_lower(fun: [u8; 3]) -> Result<usize, bool> {
+    for (i, c) in fun.iter().enumerate() {
+        if *c > 0 {
+            return Ok(i);
+        }
+    }
+    return Err(false);
 }
 
 fn apply_os2(mut x: X2, kind: X2kind) -> Vec<X2> {
-    let orders = vec![x.q[0], x.q[1], x.q[2], x.q[3], x.q[4], x.q[5], x.operator[0], x.operator[1], x.operator[2]];
+    let orders = [x.q[0], x.q[1], x.q[2], x.q[3], x.q[4], x.q[5], x.operator[0], x.operator[1], x.operator[2]];
 
     // base case
     let order_sum: u8 = orders.iter().sum();
     if order_sum == 0 {
         x.kind = kind;
-        return vec!(x);
+        return vec![x];
     }
 
     // Determine which basis function and component to lower.
     // The component is one of (x, y, z).
-    let fun = find_fun_to_lower(orders);
+    let mut fun = find_fun_to_lower(orders.to_vec(), 3);
+    // Make sure to not choose the operator vrr until q is exhausted.
+    let q_sum: u8 = x.q.iter().sum();
+    if fun == Ok(2) && q_sum > 0 {
+        fun = find_fun_to_lower(x.q.to_vec(), 2)
+    }
+    if fun == Err(false) {
+        x.kind = kind;
+        return vec![x];
+    }
+    let fun = fun.unwrap();
+    // let possible_components_to_lower = [&orders[fun*3], &orders[fun*3 + 1], &orders[fun*3 + 2]];
+    let mut possible_components_to_lower = [0, 0, 0];
+    let fun_orders = &orders[fun*3..fun*3 + 2];
+    possible_components_to_lower.clone_from_slice(fun_orders);
+    let component = find_component_to_lower(possible_components_to_lower);
+
+    // Determine the index of q to descend on.
+    // where q = [xa, xb, ya, yb, za, zb].
+    // Note: I thought the order of q == [xa, ya, za, xb, yb, zb]?
+    let i1: u8 = match component {
+        Ok(0) => [0, 1, 6][fun],
+        Ok(1) => [2, 3, 7][fun],
+        Ok(2) => [4, 5, 8][fun],
+        _ => panic!("impossible branch?")
+    };
+
+    let mut pre = Vec::new();
+    pre.push(i1);
+
+    if kind == X2kind::S {
+        // The vrr for overlap integrals consists of three "terms".
+        pre.push(6);
+        pre.push(7);
+    }
+
+    if kind == X2kind::T {
+        pre.push(6);
+        pre.push(7);
+        pre.push(8);
+        pre.push([9, 10][fun]);
+    }
+
+    if kind == X2kind::V {
+        let i2: u8 = match component {
+            Ok(0) => 6,
+            Ok(1) => 7,
+            Ok(2) => 8,
+            _ => panic!("impossible branch?")
+        };
+        pre.push(i2);
+        pre.push(9);
+        pre.push(10);
+        pre.push(9);
+        pre.push(10);
+    }
+
+    if kind == X2kind::M {
+        pre.push(9);
+        pre.push(10);
+        pre.push(11);
+    }
+
+    if kind == X2kind::L {
+        pre.push(6);
+        pre.push(7);
+        pre.push(8 + x.d);
+        pre.push(11);
+        pre.push(12);
+        pre.push(13);
+    }
+
+    // Determine which of the basis functions is ("a", "b").
+    let (a, b) = match fun {
+        2 => (2, 2),
+        _ => {
+            let mut l: Vec<usize> = vec![0, 1];
+            l.remove_item(&fun);
+            (fun, l[0])
+        }
+    };
+
+    // These are the number of integrals that appear in the main
+    // recursion equations for each kind.
+    let num_terms = pre.len();
+
+    // Make copies of the current integral to manipulate later,
+    // one fo reach term in the recursion expression.
+    let mut x_copy = Vec::new();
+    for _ in 0..num_terms {
+        x_copy.push(x.clone());
+    }
+
+    // These are the terms in [A19] with (m + 1).
+    if kind == X2kind::V {
+        let terms: [usize; 3] = [1, 3, 5];
+        for term in terms.iter() {
+            x_copy[*term].order += 1;
+        }
+    }
+
+    // Look at the last line of [A12].
+    if kind == X2kind::T {
+        x_copy[3].kind = X2kind::S;
+        x_copy[4].kind = X2kind::S;
+    }
+
+    // Look at the last two lines of [A31].
+    if kind == X2kind::L {
+        x_copy[3].kind = X2kind::S;
+        x_copy[4].kind = X2kind::S;
+        x_copy[5].kind = X2kind::S;
+        x_copy[6].kind = X2kind::S;
+    }
+
+    let component = component.unwrap();
+    // 1. Lower the target component for all three terms.
+    // 2. Lower again on center "a".
+    // 3. Lower again on center "b".
+    if kind == X2kind::S {
+        x_copy[0].q[fun*3 + component] -= 1;
+        x_copy[1].q[fun*3 + component] -= 1;
+        x_copy[2].q[fun*3 + component] -= 1;
+        x_copy[1].q[a*3 + component] -= 1;
+        x_copy[2].q[b*3 + component] -= 1;
+    }
+
+    if kind == X2kind::T {
+        x_copy[0].q[fun*3 + component] -= 1;
+        x_copy[1].q[fun*3 + component] -= 1;
+        x_copy[2].q[fun*3 + component] -= 1;
+        // term 4 (x_copy[3]) has the same components but becomes an
+        // overlap integral
+        x_copy[4].q[fun*3 + component] -= 2;
+        x_copy[1].q[a*3 + component] -= 1;
+        x_copy[2].q[b*3 + component] -= 1;
+    }
+
+    if kind == X2kind::V {
+        x_copy[0].q[fun*3 + component] -= 1;
+        x_copy[2].q[fun*3 + component] -= 1;
+        x_copy[4].q[fun*3 + component] -= 1;
+        x_copy[2].q[a*3 + component] -= 1;
+        x_copy[4].q[b*3 + component] -= 1;
+        x_copy[1].q = x_copy[0].q;
+        x_copy[3].q = x_copy[2].q;
+        x_copy[5].q = x_copy[4].q;
+    }
 
     return vec!();
 }
@@ -163,6 +327,7 @@ fn get_moment(
 #[cfg(test)]
 mod tests {
     use super::find_fun_to_lower;
+    use super::find_component_to_lower;
     use super::get_coulomb;
     use super::get_kinetic;
     use super::get_moment;
@@ -171,18 +336,26 @@ mod tests {
 
     #[test]
     fn test_find_fun_to_lower() {
-        assert_eq!(find_fun_to_lower([1, 0, 0, 0, 0, 0].to_vec()), 0);
-        assert_eq!(find_fun_to_lower([0, 1, 0, 0, 0, 0].to_vec()), 0);
-        assert_eq!(find_fun_to_lower([0, 0, 1, 0, 0, 0].to_vec()), 0);
-        assert_eq!(find_fun_to_lower([0, 0, 0, 1, 0, 0].to_vec()), 1);
-        assert_eq!(find_fun_to_lower([0, 0, 0, 0, 1, 0].to_vec()), 1);
-        assert_eq!(find_fun_to_lower([0, 0, 0, 0, 0, 1].to_vec()), 1);
-        assert_eq!(find_fun_to_lower([0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0].to_vec()), 1);
-        assert_eq!(find_fun_to_lower([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1].to_vec()), 3);
-        assert_eq!(find_fun_to_lower([1, 0, 0, 0, 0, 0, 0, 0, 1].to_vec()), 0);
-        assert_eq!(find_fun_to_lower([0, 0, 0, 0, 0, 0, 0, 0, 1].to_vec()), 2);
-        assert_eq!(find_fun_to_lower([0, 0, 0, 0, 1, 0, 0, 0, 1].to_vec()), 1);
-        assert_eq!(find_fun_to_lower([0, 0, 0, 0, 2, 0, 0, 0, 1].to_vec()), 2);
+        assert_eq!(find_fun_to_lower([1, 0, 0, 0, 0, 0].to_vec(), 2), Ok(0));
+        assert_eq!(find_fun_to_lower([0, 1, 0, 0, 0, 0].to_vec(), 2), Ok(0));
+        assert_eq!(find_fun_to_lower([0, 0, 1, 0, 0, 0].to_vec(), 2), Ok(0));
+        assert_eq!(find_fun_to_lower([0, 0, 0, 1, 0, 0].to_vec(), 2), Ok(1));
+        assert_eq!(find_fun_to_lower([0, 0, 0, 0, 1, 0].to_vec(), 2), Ok(1));
+        assert_eq!(find_fun_to_lower([0, 0, 0, 0, 0, 1].to_vec(), 2), Ok(1));
+        assert_eq!(find_fun_to_lower([0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0].to_vec(), 4), Ok(1));
+        assert_eq!(find_fun_to_lower([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1].to_vec(), 4), Ok(3));
+        assert_eq!(find_fun_to_lower([1, 0, 0, 0, 0, 0, 0, 0, 1].to_vec(), 3), Ok(0));
+        assert_eq!(find_fun_to_lower([0, 0, 0, 0, 0, 0, 0, 0, 1].to_vec(), 3), Ok(2));
+        assert_eq!(find_fun_to_lower([0, 0, 0, 0, 1, 0, 0, 0, 1].to_vec(), 3), Ok(1));
+        assert_eq!(find_fun_to_lower([0, 0, 0, 0, 2, 0, 0, 0, 1].to_vec(), 3), Ok(2));
+    }
+
+    #[test]
+    fn test_find_component_to_lower() {
+        assert_eq!(find_component_to_lower([0, 0, 1]), Ok(2));
+        assert_eq!(find_component_to_lower([0, 1, 1]), Ok(1));
+        assert_eq!(find_component_to_lower([1, 0, 1]), Ok(0));
+        assert_eq!(find_component_to_lower([0, 0, 0]), Err(false));
     }
 
     #[test]
