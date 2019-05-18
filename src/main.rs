@@ -64,7 +64,6 @@ fn get_r12_squared(r1: [f64; 3], r2: [f64; 3]) -> f64 {
 
 fn find_fun_to_lower(q: Vec<u8>, n: usize) -> Result<usize, bool> {
     // Determine the total angular momentum on each center.
-    // let n = q.len() / 3;
     let mut l = vec!();
     for i in 0..n {
         l.push(q[i * 3] + q[i * 3 + 1] + q[i * 3 + 2])
@@ -197,7 +196,20 @@ fn apply_os2(mut x: X2, kind: X2kind) -> Vec<X2> {
 
     // These are the number of integrals that appear in the main
     // recursion equations for each kind.
-    let num_terms = pre.len();
+    // let num_terms = pre.len();
+    let num_terms = match kind {
+        X2kind::S => 3,
+        X2kind::T => 5,
+        X2kind::V => 6,
+        X2kind::M => match fun {
+            2 => 2,
+            _ => 4,
+        },
+        X2kind::L => 7,
+        X2kind::E => 0,
+        X2kind::J => 0,
+        X2kind::FC => 0,
+    };
 
     // Make copies of the current integral to manipulate later,
     // one fo reach term in the recursion expression.
