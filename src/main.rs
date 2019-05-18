@@ -2,12 +2,15 @@
 use std::convert::TryInto;
 use std::f64::consts::PI;
 
+extern crate rgsl;
+
 fn main() {
     let za = 1.8;
     let zb = 2.8;
     let ra = [0.0, 0.0, 0.0];
     let rb = [0.5, 0.8, -0.2];
     println!("{}", get_overlap(za, zb, ra, rb, [2, 1, 0, 1, 1, 0]));
+    println!("{}", boys(2, 2.0));
 }
 
 #[derive(Clone, PartialEq)]
@@ -61,6 +64,20 @@ fn get_bi_center(z1: f64, z2: f64, r1: [f64; 3], r2: [f64; 3]) -> [f64; 3] {
     let ry = (z1 * r1[1] + z2 * r2[1]) / z;
     let rz = (z1 * r1[2] + z2 * r2[2]) / z;
     return [rx, ry, rz];
+}
+
+fn boys(n: u64, x: f64) -> f64 {
+    let n = n as f64;
+    if x > 0.0 {
+        let f = 2.0 * x.powf(n + 0.5);
+        let g = rgsl::gamma_beta::gamma::gamma(n + 0.5);
+        // need the "upper" incomplete gamma function, integrate from x to infty
+        // regularized -> divide by gamma function
+        let gi = rgsl::gamma_beta::incomplete_gamma::gamma_inc_P_e(n + 0.5, x).1.val;
+        return g * gi / f;
+    } else {
+        return 1.0 / (n * 2.0 + 1.0);
+    }
 }
 
 fn get_r12_squared(r1: [f64; 3], r2: [f64; 3]) -> f64 {
@@ -514,7 +531,49 @@ fn get_kinetic(za: f64, zb: f64, ra: [f64; 3], rb: [f64; 3], c: [u8; 6]) -> f64 
 }
 
 fn get_nuclear(za: f64, zb: f64, ra: [f64; 3], rb: [f64; 3], rc: [f64; 3], c: [u8; 6]) -> f64 {
-    return 0.0;
+    let z = za + zb;
+    let rp = get_bi_center(za, zb, ra, rb);
+    let pc = get_r12_squared(rp, rc);
+    let u = z * pc;
+    let aux = -2.0 * (z / PI).powf(0.5) * get_overlap(za, zb, ra, rb, [0, 0, 0, 0, 0, 0]);
+
+    let prefac = vec![
+        rp[0] - ra[0],
+        rp[0] - rb[0],
+        rp[1] - ra[1],
+        rp[1] - rb[1],
+        rp[2] - ra[2],
+        rp[2] - rb[2],
+        -rp[0] + rc[0],
+        -rp[1] + rc[1],
+        -rp[2] + rc[2],
+        0.5 / z,
+        -0.5 / z,
+    ];
+
+    let q: [i8; 6] = [
+        c[0] as i8, c[1] as i8, c[2] as i8, c[3] as i8, c[4] as i8, c[5] as i8,
+    ];
+
+    let fun = X2 {
+        scale: 1.0,
+        prefactors: vec![],
+        q: q,
+        kind: X2kind::V,
+        operator: [0, 0, 0],
+        d: 0,
+        order: 0,
+    };
+    let expansion = apply_os2(fun, X2kind::V);
+    let mut integral = 0.0;
+    for f in expansion.iter() {
+        let mut g = 1.0;
+        for k in f.prefactors.iter() {
+            g *= prefac[*k];
+        }
+        integral += f.scale * aux * g * boys(f.order.into(), u);
+    }
+    return integral;
 }
 
 fn get_moment(
@@ -585,6 +644,7 @@ mod tests {
     use super::get_moment;
     use super::get_nuclear;
     use super::get_overlap;
+    use super::boys;
 
     #[test]
     fn test_find_fun_to_lower() {
@@ -736,5 +796,12 @@ mod tests {
 
         let integral = get_moment(za, zb, ra, rb, rc, [0, 0, 2, 0, 0, 0], [0, 0, 1]);
         assert!((integral - -0.01330515491323708).abs() < thresh);
+    }
+
+    #[test]
+    fn test_boys() {
+        let thresh = 1.0e-16;
+
+        assert!(boys(2, 2.0) - 0.0529428148329765 < thresh);
     }
 }
