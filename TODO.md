@@ -15,8 +15,8 @@ Requirements:
 
 # Plan post-2019-04-20
 
-1. Find crate containing gamma function: `rgsl`?
-2. Find crate containing n-dimensional array crate w/ eigendecomposition
-3. What format should input files be in (Conf, TOML, JSON? not YAML)
-4. Read in JSON-formatted basis set definitions from EMSL
-5. How to store basis sets? Can we wrap https://github.com/MolSSI-BSE/basis_set_exchange (Python)?
+- [x] Find crate containing gamma function: `rgsl`?
+- [ ] Find crate containing n-dimensional array crate w/ eigendecomposition
+- [ ] What format should input files be in (Conf, TOML, JSON? not YAML)
+- [ ] Read in JSON-formatted basis set definitions from EMSL
+- [ ] How to store basis sets? Can we wrap https://github.com/MolSSI-BSE/basis_set_exchange (Python)?

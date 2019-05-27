@@ -1,4 +1,3 @@
-#![feature(vec_remove_item)]
 use std::convert::TryInto;
 use std::f64::consts::PI;
 
@@ -229,7 +228,8 @@ fn apply_os2(mut x: X2, kind: X2kind) -> Vec<X2> {
         2 => (2, 2),
         _ => {
             let mut l: Vec<usize> = vec![0, 1];
-            l.remove_item(&fun);
+            // l.remove_item(&fun);
+            l.iter().position(|&x| x == fun).map(|x| l.remove(x));
             (fun, l[0])
         }
     };
