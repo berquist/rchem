@@ -787,9 +787,7 @@ fn get_moment(
     order: [u8; 3],
 ) -> f64 {
     let z = za + zb;
-    let e = za * zb / (za + zb);
     let rp = get_bi_center(za, zb, ra, rb);
-    let ab = get_r12_squared(ra, rb);
     let aux = get_overlap(za, zb, ra, rb, [0, 0, 0, 0, 0, 0]);
 
     let prefac = vec![
