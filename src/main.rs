@@ -1,6 +1,6 @@
-// extern crate nalgebra as na;
-// use na::U3;
 extern crate ndarray as nd;
+use cpython::{PyDict, PyResult, Python};
+use serde_json;
 
 mod basis;
 mod integrals;
@@ -15,21 +15,6 @@ fn main() {
         integrals::get_overlap(za, zb, ra, rb, [2, 1, 0, 1, 1, 0])
     );
 
-    // let v = na::Vector3::new(1, 2, 3);
-    // let w: na::Vector3<f64> = na::Vector3::new_random();
-    // // let x = na::Vector3<f64>::new_random();
-    // println!("{}", v);
-    // println!("{}", w);
-    // // let a: na::MatrixMN<f64, U3, U3> = na::Matrix<_, _, _, _>>::new_random(3, 3);
-    // let a = na::DMatrix::<f64>::new_random(3, 3);
-    // println!("{}", a);
-    // let b = na::Matrix3x3::<f64>::new_random();
-    // println!("{}", b);
-
-    // let a = nd::arr2(&[[3.0, 1.0, 1.0],
-    //                    [1.0, 3.0, 1.0],
-    //                    [1.0, 1.0, 3.0]]);
-    // println!("{}", a];
     let coords = nd::arr2(&[
         [0.000000000000, -0.143225816552, 0.000000000000],
         [1.638036840407, 1.136548822547, 0.000000000000],
@@ -44,4 +29,27 @@ fn main() {
     );
     println!("{:?}", a);
     println!("{}", basis::S(&a, &a));
+
+    let gil = Python::acquire_gil();
+    let json = get_bse_json(gil.python());
+    let v: serde_json::Value = serde_json::from_str(&json).unwrap();
+    println!("{:#?}", v);
+}
+
+// TODO how to pass the basis set name?
+// TODO how to pass the element numbers?
+fn get_bse_json(py: Python) -> String {
+    let locals = PyDict::new(py);
+    locals
+        .set_item(py, "bse", py.import("basis_set_exchange").unwrap())
+        .unwrap();
+    return py
+        .eval(
+            "bse.get_basis(\"STO-3G\", elements=[8, 1], fmt=\"json\")",
+            None,
+            Some(&locals),
+        )
+        .unwrap()
+        .extract(py)
+        .unwrap();
 }

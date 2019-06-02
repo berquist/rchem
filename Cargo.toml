@@ -6,5 +6,6 @@ edition = "2018"
 
 [dependencies]
 GSL = "1.1.0"
-# nalgebra = "0.18.0"
 ndarray = "0.12.1"
+cpython = "0.2"
+serde_json = "*"
