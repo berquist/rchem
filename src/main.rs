@@ -58,19 +58,31 @@ struct BSEElement {
     electron_shells: Vec<BSEElectronShell>,
 }
 
+#[derive(Debug, Deserialize)]
 enum BSEFunctionType {
+    #[serde(rename = "gto")]
     GTO,
+    #[serde(rename = "gto_spherical")]
     GTOSpherical,
+    #[serde(rename = "gto_cartesian")]
     GTOCartesian,
+    #[serde(rename = "sto")]
     STO
 }
 
+#[derive(Debug, Deserialize)]
 enum BSERegion {
-    Empty,
+    #[serde(rename = "")]
+    All,
+    #[serde(rename = "valence")]
     Valence,
+    #[serde(rename = "polarization")]
     Polarization,
+    #[serde(rename = "core")]
     Core,
+    #[serde(rename = "tight")]
     Tight,
+    #[serde(rename = "diffuse")]
     Diffuse,
 }
 
@@ -79,8 +91,8 @@ struct BSEElectronShell {
     angular_momentum: Vec<u8>,
     coefficients: Vec<Vec<String>>,
     exponents: Vec<String>,
-    function_type: String,
-    region: String,
+    function_type: BSEFunctionType,
+    region: BSERegion,
 }
 
 // TODO how to pass the basis set name?
