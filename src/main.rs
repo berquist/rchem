@@ -1,8 +1,10 @@
+use std::collections::HashMap as Map;
 use std::collections::HashSet as Set;
 
 // extern crate ndarray as nd;
 use cpython::{PyDict, PyResult, Python};
 use ndarray as nd;
+use serde::Deserialize;
 use serde_json;
 
 mod basis;
@@ -13,31 +15,72 @@ fn main() {
     let zb = 2.8;
     let ra = [0.0, 0.0, 0.0];
     let rb = [0.5, 0.8, -0.2];
-    println!(
-        "{}",
-        integrals::get_overlap(za, zb, ra, rb, [2, 1, 0, 1, 1, 0])
-    );
+    // println!(
+    //     "{}",
+    //     integrals::get_overlap(za, zb, ra, rb, [2, 1, 0, 1, 1, 0])
+    // );
 
     let coords = nd::arr2(&[
         [0.000000000000, -0.143225816552, 0.000000000000],
         [1.638036840407, 1.136548822547, 0.000000000000],
         [-1.638036840407, 1.136548822547, 0.000000000000],
     ]);
-    println!("{}", coords);
+    // println!("{}", coords);
 
     let a = basis::PGTO::new(
         [coords[[0, 0]], coords[[0, 1]], coords[[0, 2]]],
         1.0,
         [0, 0, 0],
     );
-    println!("{:?}", a);
-    println!("{}", basis::S(&a, &a));
+    // println!("{:?}", a);
+    // println!("{}", basis::S(&a, &a));
 
     let gil = Python::acquire_gil();
     let elements = vec![8, 1, 1];
     let json = get_bse_json(gil.python(), "STO-3G", elements);
     let v: serde_json::Value = serde_json::from_str(&json).unwrap();
-    // println!("{:#?}", v);
+    println!("{:#?}", v);
+    let v2: BSEResult = serde_json::from_str(&json).unwrap();
+    println!("{:#?}", v2);
+}
+
+#[derive(Debug, Deserialize)]
+struct BSEResult {
+    name: String,
+    description: String,
+    // TODO how to make this optional?
+    // notes: String,
+    elements: Map<u8, BSEElement>,
+}
+
+#[derive(Debug, Deserialize)]
+struct BSEElement {
+    electron_shells: Vec<BSEElectronShell>,
+}
+
+enum BSEFunctionType {
+    GTO,
+    GTOSpherical,
+    GTOCartesian,
+    STO
+}
+
+enum BSERegion {
+    Empty,
+    Valence,
+    Polarization,
+    Core,
+    Tight,
+    Diffuse,
+}
+
+#[derive(Debug, Deserialize)]
+struct BSEElectronShell {
+    angular_momentum: Vec<u8>,
+    coefficients: Vec<Vec<String>>,
+    exponents: Vec<String>,
+    function_type: String,
+    region: String,
 }
 
 // TODO how to pass the basis set name?
