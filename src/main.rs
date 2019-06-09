@@ -1,8 +1,7 @@
 use std::collections::HashMap as Map;
 use std::collections::HashSet as Set;
 
-// extern crate ndarray as nd;
-use cpython::{PyDict, PyResult, Python};
+use cpython::{PyDict, Python};
 use ndarray as nd;
 use serde::Deserialize;
 use serde_json;
@@ -38,10 +37,11 @@ fn main() {
     let gil = Python::acquire_gil();
     let elements = vec![8, 1, 1];
     let json = get_bse_json(gil.python(), "STO-3G", elements);
-    let v: serde_json::Value = serde_json::from_str(&json).unwrap();
-    println!("{:#?}", v);
-    let v2: BSEResult = serde_json::from_str(&json).unwrap();
-    println!("{:#?}", v2);
+    println!("{:#?}", json);
+    // let v: serde_json::Value = serde_json::from_str(&json).unwrap();
+    // println!("{:#?}", v);
+    // let v2: BSEResult = serde_json::from_str(&json).unwrap();
+    // println!("{:#?}", v2);
 }
 
 #[derive(Debug, Deserialize)]
@@ -89,15 +89,15 @@ enum BSERegion {
 #[derive(Debug, Deserialize)]
 struct BSEElectronShell {
     angular_momentum: Vec<u8>,
+    // #[serde(deserialize_with = "CoefficientDeserializer")]
+    // coefficients: Vec<Vec<f64>>,
     coefficients: Vec<Vec<String>>,
     exponents: Vec<String>,
     function_type: BSEFunctionType,
     region: BSERegion,
 }
 
-// TODO how to pass the basis set name?
-// TODO how to pass the element numbers?
-fn get_bse_json(py: Python, basis_set_name: &str, elements: Vec<u8>) -> String {
+fn get_bse_json(py: Python, basis_set_name: &str, elements: Vec<u8>) -> BSEResult {
     let locals = PyDict::new(py);
     locals
         .set_item(py, "bse", py.import("basis_set_exchange").unwrap())
@@ -109,9 +109,10 @@ fn get_bse_json(py: Python, basis_set_name: &str, elements: Vec<u8>) -> String {
         "bse.get_basis(\"{}\", elements=[{}], fmt=\"json\")",
         basis_set_name, unique_elements
     );
-    return py
+    let jsonstr: String = py
         .eval(&call, None, Some(&locals))
         .unwrap()
         .extract(py)
         .unwrap();
+    return serde_json::from_str(&jsonstr).unwrap();
 }
