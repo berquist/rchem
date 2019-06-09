@@ -1,5 +1,8 @@
-extern crate ndarray as nd;
+use std::collections::HashSet as Set;
+
+// extern crate ndarray as nd;
 use cpython::{PyDict, PyResult, Python};
+use ndarray as nd;
 use serde_json;
 
 mod basis;
@@ -31,24 +34,28 @@ fn main() {
     println!("{}", basis::S(&a, &a));
 
     let gil = Python::acquire_gil();
-    let json = get_bse_json(gil.python());
+    let elements = vec![8, 1, 1];
+    let json = get_bse_json(gil.python(), "STO-3G", elements);
     let v: serde_json::Value = serde_json::from_str(&json).unwrap();
-    println!("{:#?}", v);
+    // println!("{:#?}", v);
 }
 
 // TODO how to pass the basis set name?
 // TODO how to pass the element numbers?
-fn get_bse_json(py: Python) -> String {
+fn get_bse_json(py: Python, basis_set_name: &str, elements: Vec<u8>) -> String {
     let locals = PyDict::new(py);
     locals
         .set_item(py, "bse", py.import("basis_set_exchange").unwrap())
         .unwrap();
+    let unique_elements: Set<u8> = elements.into_iter().collect();
+    let unique_elements: Vec<String> = unique_elements.iter().map(|x| x.to_string()).collect();
+    let unique_elements = unique_elements.join(", ");
+    let call = format!(
+        "bse.get_basis(\"{}\", elements=[{}], fmt=\"json\")",
+        basis_set_name, unique_elements
+    );
     return py
-        .eval(
-            "bse.get_basis(\"STO-3G\", elements=[8, 1], fmt=\"json\")",
-            None,
-            Some(&locals),
-        )
+        .eval(&call, None, Some(&locals))
         .unwrap()
         .extract(py)
         .unwrap();
