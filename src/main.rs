@@ -3,7 +3,7 @@ use std::collections::HashSet as Set;
 
 use cpython::{PyDict, Python};
 use ndarray as nd;
-use serde::Deserialize;
+use serde::{Deserialize, Deserializer};
 use serde_json;
 
 mod basis;
@@ -36,12 +36,8 @@ fn main() {
 
     let gil = Python::acquire_gil();
     let elements = vec![8, 1, 1];
-    let json = get_bse_json(gil.python(), "STO-3G", elements);
-    println!("{:#?}", json);
-    // let v: serde_json::Value = serde_json::from_str(&json).unwrap();
-    // println!("{:#?}", v);
-    // let v2: BSEResult = serde_json::from_str(&json).unwrap();
-    // println!("{:#?}", v2);
+    let bseresult = get_bse_json(gil.python(), "STO-3G", elements);
+    println!("{:#?}", bseresult);
 }
 
 #[derive(Debug, Deserialize)]
@@ -67,7 +63,7 @@ enum BSEFunctionType {
     #[serde(rename = "gto_cartesian")]
     GTOCartesian,
     #[serde(rename = "sto")]
-    STO
+    STO,
 }
 
 #[derive(Debug, Deserialize)]
@@ -86,13 +82,33 @@ enum BSERegion {
     Diffuse,
 }
 
+fn vec_strings_to_f64(v: &Vec<String>) -> Vec<f64> {
+    v.iter().map(|x| x.parse::<f64>().unwrap()).collect()
+}
+
+fn deserialize_vec_vec_string_to_vec_vec_f64<'de, D: Deserializer<'de>>(
+    deserializer: D,
+) -> Result<Vec<Vec<f64>>, D::Error> {
+    let v: Vec<Vec<String>> = Deserialize::deserialize(deserializer)?;
+    Ok(v.iter().map(|x| vec_strings_to_f64(&x)).collect())
+}
+
+fn deserialize_vec_string_to_vec_f64<'de, D: Deserializer<'de>>(
+    deserializer: D,
+) -> Result<Vec<f64>, D::Error> {
+    let v: Vec<String> = Deserialize::deserialize(deserializer)?;
+    Ok(vec_strings_to_f64(&v))
+}
+
 #[derive(Debug, Deserialize)]
 struct BSEElectronShell {
     angular_momentum: Vec<u8>,
-    // #[serde(deserialize_with = "CoefficientDeserializer")]
-    // coefficients: Vec<Vec<f64>>,
-    coefficients: Vec<Vec<String>>,
-    exponents: Vec<String>,
+    // both the coefficients and exponents are stored as strings in the Basis
+    // Set Exchange in order to maintain scientific notation
+    #[serde(deserialize_with = "deserialize_vec_vec_string_to_vec_vec_f64")]
+    coefficients: Vec<Vec<f64>>,
+    #[serde(deserialize_with = "deserialize_vec_string_to_vec_f64")]
+    exponents: Vec<f64>,
     function_type: BSEFunctionType,
     region: BSERegion,
 }
@@ -114,5 +130,11 @@ fn get_bse_json(py: Python, basis_set_name: &str, elements: Vec<u8>) -> BSEResul
         .unwrap()
         .extract(py)
         .unwrap();
-    return serde_json::from_str(&jsonstr).unwrap();
+    let tmp: serde_json::Value = serde_json::from_str(&jsonstr).unwrap();
+    // println!("{:#?}", tmp);
+    // println!(
+    //     "{:#?}",
+    //     tmp["elements"]["1"]["electron_shells"][0]["exponents"]
+    // );
+    serde_json::from_str(&jsonstr).unwrap()
 }
