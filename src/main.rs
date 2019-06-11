@@ -37,8 +37,11 @@ fn main() {
     let mut trajectory = chemfiles::Trajectory::open("water.xyz", 'r').unwrap();
     let mut frame = chemfiles::Frame::new();
     trajectory.read(&mut frame).unwrap();
+    let natom = frame.size();
     let atomcoords = frame.positions();
+    let atomnos: Vec<_> = (0..natom).map(|i| frame.atom(i).atomic_number()).collect();
     println!("{:?}", atomcoords);
+    println!("{:?}", atomnos);
 
     let a = basis::PGTO::new(
         [atomcoords[0][0], atomcoords[0][1], atomcoords[0][2]],
