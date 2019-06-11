@@ -6,6 +6,24 @@ mod integrals;
 mod shell;
 
 fn main() {
+    // http://www.patorjk.com/software/taag/#p=display&f=3D%20Diagonal&t=rchem
+    let logo = r#"
+                   ,---,                       ____
+                 ,--.' |                     ,'  , `.
+  __  ,-.        |  |  :                  ,-+-,.' _ |
+,' ,'/ /|        :  :  :               ,-+-. ;   , ||
+'  | |' | ,---.  :  |  |,--.   ,---.  ,--.'|'   |  ||
+|  |   ,'/     \ |  :  '   |  /     \|   |  ,', |  |,
+'  :  / /    / ' |  |   /' : /    /  |   | /  | |--'
+|  | ' .    ' /  '  :  | | |.    ' / |   : |  | ,
+;  : | '   ; :__ |  |  ' | :'   ;   /|   : |  |/
+|  , ; '   | '.'||  :  :_:,''   |  / |   | |`-'
+ ---'  |   :    :|  | ,'    |   :    |   ;/
+        \   \  / `--''       \   \  /'---'
+         `----'               `----'
+"#;
+    println!("{}", logo);
+
     let za = 1.8;
     let zb = 2.8;
     let ra = [0.0, 0.0, 0.0];
@@ -33,5 +51,5 @@ fn main() {
     let gil = Python::acquire_gil();
     let elements = vec![8, 1, 1];
     let bseresult = basis::get_bse_json(gil.python(), "STO-3G", elements);
-    println!("{:#?}", bseresult);
+    // println!("{:#?}", bseresult);
 }
