@@ -1,0 +1,10 @@
+language: rust
+rust:
+  - stable
+
+addons:
+  apt:
+    packages:
+      - libgsl0-dev
+
+cache: cargo
