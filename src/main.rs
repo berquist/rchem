@@ -1,3 +1,4 @@
+use chemfiles;
 use cpython::Python;
 use ndarray as nd;
 
@@ -33,15 +34,14 @@ fn main() {
     //     integrals::get_overlap(za, zb, ra, rb, [2, 1, 0, 1, 1, 0])
     // );
 
-    let coords = nd::arr2(&[
-        [0.000000000000, -0.143225816552, 0.000000000000],
-        [1.638036840407, 1.136548822547, 0.000000000000],
-        [-1.638036840407, 1.136548822547, 0.000000000000],
-    ]);
-    // println!("{}", coords);
+    let mut trajectory = chemfiles::Trajectory::open("water.xyz", 'r').unwrap();
+    let mut frame = chemfiles::Frame::new();
+    trajectory.read(&mut frame).unwrap();
+    let atomcoords = frame.positions();
+    println!("{:?}", atomcoords);
 
     let a = basis::PGTO::new(
-        [coords[[0, 0]], coords[[0, 1]], coords[[0, 2]]],
+        [atomcoords[0][0], atomcoords[0][1], atomcoords[0][2]],
         1.0,
         [0, 0, 0],
     );
