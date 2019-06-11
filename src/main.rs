@@ -3,6 +3,7 @@ use ndarray as nd;
 
 mod basis;
 mod integrals;
+mod shell;
 
 fn main() {
     let za = 1.8;
