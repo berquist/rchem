@@ -81,12 +81,12 @@ struct BSEElectronShell {
     region: BSERegion,
 }
 
-pub fn get_bse_json(py: Python, basis_set_name: &str, elements: Vec<u8>) -> BSEResult {
+pub fn get_bse_json(py: Python, basis_set_name: &str, elements: Vec<u64>) -> BSEResult {
     let locals = PyDict::new(py);
     locals
         .set_item(py, "bse", py.import("basis_set_exchange").unwrap())
         .unwrap();
-    let unique_elements: Set<u8> = elements.into_iter().collect();
+    let unique_elements: Set<u64> = elements.into_iter().collect();
     let unique_elements: Vec<String> = unique_elements.iter().map(|x| x.to_string()).collect();
     let unique_elements = unique_elements.join(", ");
     let call = format!(

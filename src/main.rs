@@ -25,10 +25,10 @@ fn main() {
 "#;
     println!("{}", logo);
 
-    let za = 1.8;
-    let zb = 2.8;
-    let ra = [0.0, 0.0, 0.0];
-    let rb = [0.5, 0.8, -0.2];
+    // let za = 1.8;
+    // let zb = 2.8;
+    // let ra = [0.0, 0.0, 0.0];
+    // let rb = [0.5, 0.8, -0.2];
     // println!(
     //     "{}",
     //     integrals::get_overlap(za, zb, ra, rb, [2, 1, 0, 1, 1, 0])
@@ -52,7 +52,6 @@ fn main() {
     // println!("{}", basis::S(&a, &a));
 
     let gil = Python::acquire_gil();
-    let elements = vec![8, 1, 1];
-    let bseresult = basis::get_bse_json(gil.python(), "STO-3G", elements);
-    // println!("{:#?}", bseresult);
+    let bseresult = basis::get_bse_json(gil.python(), "STO-3G", atomnos);
+    println!("{:#?}", bseresult);
 }
