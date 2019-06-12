@@ -6,10 +6,11 @@ use cpython::{PyDict, Python};
 use serde::{Deserialize, Deserializer};
 use serde_json;
 
+use crate::shell;
 use crate::integrals;
 
 #[derive(Debug, Deserialize)]
-pub struct BSEResult {
+struct BSEResult {
     name: String,
     description: String,
     // TODO how to make this optional?
@@ -70,7 +71,7 @@ fn deserialize_vec_string_to_vec_f64<'de, D: Deserializer<'de>>(
 
 #[derive(Debug, Deserialize)]
 struct BSEElectronShell {
-    angular_momentum: Vec<u8>,
+    angular_momentum: Vec<usize>,
     // both the coefficients and exponents are stored as strings in the Basis
     // Set Exchange in order to maintain scientific notation
     #[serde(deserialize_with = "deserialize_vec_vec_string_to_vec_vec_f64")]
@@ -81,12 +82,13 @@ struct BSEElectronShell {
     region: BSERegion,
 }
 
-pub fn get_bse_json(py: Python, basis_set_name: &str, elements: Vec<u64>) -> BSEResult {
+fn get_bse_json(py: Python, basis_set_name: &str, elements: &Vec<u64>) -> BSEResult {
     let locals = PyDict::new(py);
     locals
         .set_item(py, "bse", py.import("basis_set_exchange").unwrap())
         .unwrap();
-    let unique_elements: Set<u64> = elements.into_iter().collect();
+    // Copy over the elements
+    let unique_elements: Set<u64> = elements.into_iter().map(|&x| x).collect();
     let unique_elements: Vec<String> = unique_elements.iter().map(|x| x.to_string()).collect();
     let unique_elements = unique_elements.join(", ");
     let call = format!(
@@ -98,12 +100,6 @@ pub fn get_bse_json(py: Python, basis_set_name: &str, elements: Vec<u64>) -> BSE
         .unwrap()
         .extract(py)
         .unwrap();
-    let tmp: serde_json::Value = serde_json::from_str(&jsonstr).unwrap();
-    // println!("{:#?}", tmp);
-    // println!(
-    //     "{:#?}",
-    //     tmp["elements"]["1"]["electron_shells"][0]["exponents"]
-    // );
     serde_json::from_str(&jsonstr).unwrap()
 }
 
@@ -116,15 +112,15 @@ fn fact2(n: isize) -> isize {
 }
 
 #[derive(Clone, Debug)]
-pub struct PGTO {
+struct PGTO {
     origin: [f64; 3],
     exponent: f64,
-    powers: [u8; 3],
+    powers: [usize; 3],
     norm: f64,
 }
 
 impl PGTO {
-    pub fn new(origin: [f64; 3], exponent: f64, powers: [u8; 3]) -> PGTO {
+    fn new(origin: [f64; 3], exponent: f64, powers: [usize; 3]) -> PGTO {
         let mut ret = PGTO {
             origin,
             exponent,
@@ -135,7 +131,7 @@ impl PGTO {
         ret
     }
 
-    fn order(&self) -> u8 {
+    fn order(&self) -> usize {
         self.powers.iter().sum()
     }
 
@@ -151,19 +147,70 @@ impl PGTO {
     }
 }
 
-// struct CGTO {
-//     origin: [f64; 3],
-//     exponents: Vec<f64>,
-//     powers: [u8; 3],
-//     contraction_coefficients: Vec<f64>,
-// }
+#[derive(Debug)]
+struct CGTO {
+    origin: [f64; 3],
+    exponents: Vec<f64>,
+    powers: [usize; 3],
+    norms: Vec<f64>,
+    coefs: Vec<f64>,
+}
 
-// struct CGTO {
-//     primitives: [PGTO],
-//     contraction_coefficients: [f64],
-// }
+impl CGTO {
+    // pub fn new(pgtos: &Vec<PGTO>) -> CGTO {
+    pub fn new(
+        origin: [f64; 3],
+        exponents: Vec<f64>,
+        powers: [usize; 3],
+        norms: Vec<f64>,
+        coefs: Vec<f64>,
+    ) -> CGTO {
+        // Do a validation pass before forming the contracted function. All
+        // PGTOs should have the same origin and powers.
+        // pgtos.for_each(|x| println!("{:?}", x));
+        CGTO {
+            origin: origin,
+            exponents: exponents,
+            powers: powers,
+            norms: norms,
+            coefs: coefs,
+        }
+    }
+}
 
-pub fn S(a: &PGTO, b: &PGTO) -> f64 {
+pub struct Basis {}
+
+impl Basis {
+    pub fn new(atomnos: &Vec<u64>, all_atomcoords: &[[f64; 3]], basis_set_name: &str) {
+        let gil = Python::acquire_gil();
+        let bseresult = get_bse_json(gil.python(), basis_set_name, &atomnos);
+        for (i, &atomno) in atomnos.iter().enumerate() {
+            let atomcoords = all_atomcoords[i];
+            println!("{} {} {:?}", i, atomno, atomcoords);
+            let element = &bseresult.elements[&(atomno as u8)];
+            for shell in &element.electron_shells {
+                println!("{:?}", shell);
+                for angular_momentum in &shell.angular_momentum {
+                    for powers in shell::get_ijk_list(*angular_momentum) {
+                        // let pgto = PGTO::new([0.0, 0.0, 0.0], shell.exponent, shell.powers);
+                        // println!("{:?}", pgto);
+                        let cgto = CGTO::new(
+                            atomcoords.clone(),
+                            shell.exponents.clone(),
+                            powers,
+                            vec![0.0, 0.0, 0.0],
+                            shell.coefficients[*angular_momentum].clone(),
+                        );
+                        println!("{:?}", cgto);
+                    }
+                }
+            }
+        }
+    }
+}
+
+
+fn S(a: &PGTO, b: &PGTO) -> f64 {
     let powers = [
         a.powers[0],
         a.powers[1],

@@ -1,4 +1,4 @@
-fn get_ijk_list(m: u8) -> Vec<[u8; 3]> {
+pub fn get_ijk_list(m: usize) -> Vec<[usize; 3]> {
     let mut l = Vec::new();
     for a in 1..(m + 2) {
         for b in 1..(a + 1) {
@@ -11,7 +11,7 @@ fn get_ijk_list(m: u8) -> Vec<[u8; 3]> {
     l
 }
 
-fn get_shell4(a: u8, b: u8, c: u8, d: u8) -> Vec<[u8; 12]> {
+fn get_shell4(a: usize, b: usize, c: usize, d: usize) -> Vec<[usize; 12]> {
     let mut components = Vec::new();
     for p in get_ijk_list(a) {
         for q in get_ijk_list(b) {
@@ -27,7 +27,7 @@ fn get_shell4(a: u8, b: u8, c: u8, d: u8) -> Vec<[u8; 12]> {
     components
 }
 
-fn get_shell2(a: u8, b: u8) -> Vec<[u8; 6]> {
+fn get_shell2(a: usize, b: usize) -> Vec<[usize; 6]> {
     let mut components = Vec::new();
     for p in get_ijk_list(a) {
         for q in get_ijk_list(b) {

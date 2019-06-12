@@ -638,7 +638,7 @@ fn apply_os2(mut x: X2, kind: X2kind) -> Vec<X2> {
         .collect();
 }
 
-pub fn get_overlap(za: f64, zb: f64, ra: [f64; 3], rb: [f64; 3], c: [u8; 6]) -> f64 {
+pub fn get_overlap(za: f64, zb: f64, ra: [f64; 3], rb: [f64; 3], c: [usize; 6]) -> f64 {
     let z = za + zb;
     let e = za * zb / (za + zb);
     let rp = get_bi_center(za, zb, ra, rb);
