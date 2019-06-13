@@ -6,8 +6,8 @@ use cpython::{PyDict, Python};
 use serde::{Deserialize, Deserializer};
 use serde_json;
 
-use crate::shell;
 use crate::integrals;
+use crate::shell;
 
 #[derive(Debug, Deserialize)]
 struct BSEResult {
@@ -208,7 +208,6 @@ impl Basis {
         }
     }
 }
-
 
 fn S(a: &PGTO, b: &PGTO) -> f64 {
     let powers = [
