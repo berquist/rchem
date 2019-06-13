@@ -30,4 +30,5 @@ fn main() {
     let atomcoords = frame.positions();
     let atomnos: Vec<_> = (0..natom).map(|i| frame.atom(i).atomic_number()).collect();
     let basis_set = basis::Basis::new(&atomnos, &atomcoords, "STO-3G");
+    println!("{:#?}", basis_set);
 }

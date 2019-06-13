@@ -112,7 +112,7 @@ fn fact2(n: isize) -> isize {
 }
 
 #[derive(Clone, Debug)]
-struct PGTO {
+pub struct PGTO {
     origin: [f64; 3],
     exponent: f64,
     powers: [usize; 3],
@@ -148,7 +148,7 @@ impl PGTO {
 }
 
 #[derive(Debug)]
-struct CGTO {
+pub struct CGTO {
     origin: [f64; 3],
     exponents: Vec<f64>,
     powers: [usize; 3],
@@ -189,10 +189,15 @@ impl CGTO {
     }
 }
 
-pub struct Basis {}
+#[derive(Debug)]
+pub struct Basis {
+    name: String,
+    cgtos: Vec<CGTO>,
+}
 
 impl Basis {
-    pub fn new(atomnos: &Vec<u64>, all_atomcoords: &[[f64; 3]], basis_set_name: &str) {
+    pub fn new(atomnos: &Vec<u64>, all_atomcoords: &[[f64; 3]], basis_set_name: &str) -> Basis {
+        let mut cgtos: Vec<CGTO> = Vec::new();
         let gil = Python::acquire_gil();
         let bseresult = get_bse_json(gil.python(), basis_set_name, &atomnos);
         for (i, &atomno) in atomnos.iter().enumerate() {
@@ -211,10 +216,14 @@ impl Basis {
                             .map(|exponent| PGTO::new(atomcoords.clone(), *exponent, powers))
                             .collect();
                         let cgto = CGTO::from_pgtos(&pgtos, &shell.coefficients[*angular_momentum]);
-                        println!("{:?}", cgto);
+                        cgtos.push(cgto);
                     }
                 }
             }
+        }
+        Basis {
+            name: basis_set_name.to_string(),
+            cgtos: cgtos,
         }
     }
 }
