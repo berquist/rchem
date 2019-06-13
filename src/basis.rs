@@ -157,7 +157,6 @@ struct CGTO {
 }
 
 impl CGTO {
-    // pub fn new(pgtos: &Vec<PGTO>) -> CGTO {
     pub fn new(
         origin: [f64; 3],
         exponents: Vec<f64>,
@@ -176,6 +175,18 @@ impl CGTO {
             coefs: coefs,
         }
     }
+
+    pub fn from_pgtos(pgtos: &Vec<PGTO>, coefs: &Vec<f64>) -> CGTO {
+        // TODO Ok and Err?
+        assert!(pgtos.len() > 0);
+        CGTO {
+            origin: pgtos[0].origin,
+            exponents: pgtos.iter().map(|pgto| pgto.exponent).collect(),
+            powers: pgtos[0].powers,
+            norms: pgtos.iter().map(|pgto| pgto.norm).collect(),
+            coefs: coefs.clone(),
+        }
+    }
 }
 
 pub struct Basis {}
@@ -186,21 +197,20 @@ impl Basis {
         let bseresult = get_bse_json(gil.python(), basis_set_name, &atomnos);
         for (i, &atomno) in atomnos.iter().enumerate() {
             let atomcoords = all_atomcoords[i];
-            println!("{} {} {:?}", i, atomno, atomcoords);
             let element = &bseresult.elements[&(atomno as u8)];
             for shell in &element.electron_shells {
-                println!("{:?}", shell);
                 for angular_momentum in &shell.angular_momentum {
+                    assert_eq!(
+                        shell.exponents.len(),
+                        shell.coefficients[*angular_momentum].len()
+                    );
                     for powers in shell::get_ijk_list(*angular_momentum) {
-                        // let pgto = PGTO::new([0.0, 0.0, 0.0], shell.exponent, shell.powers);
-                        // println!("{:?}", pgto);
-                        let cgto = CGTO::new(
-                            atomcoords.clone(),
-                            shell.exponents.clone(),
-                            powers,
-                            vec![0.0, 0.0, 0.0],
-                            shell.coefficients[*angular_momentum].clone(),
-                        );
+                        let pgtos: Vec<_> = shell
+                            .exponents
+                            .iter()
+                            .map(|exponent| PGTO::new(atomcoords.clone(), *exponent, powers))
+                            .collect();
+                        let cgto = CGTO::from_pgtos(&pgtos, &shell.coefficients[*angular_momentum]);
                         println!("{:?}", cgto);
                     }
                 }

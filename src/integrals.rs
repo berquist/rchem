@@ -437,7 +437,6 @@ fn apply_os2(mut x: X2, kind: X2kind) -> Vec<X2> {
 
     // These are the number of integrals that appear in the main
     // recursion equations for each kind.
-    // let num_terms = pre.len();
     let num_terms = match kind {
         X2kind::S => 3,
         X2kind::T => 5,
