@@ -46,7 +46,7 @@ fn apply_os4(x: X4) -> Vec<X4> {
         return vec![x];
     }
 
-    let fun = find_fun_to_lower(x.q.to_vec(), 4);
+    let fun = find_fun_to_lower(&x.q.to_vec(), 4);
     if fun == Err(false) {
         return vec![x];
     }
@@ -56,7 +56,7 @@ fn apply_os4(x: X4) -> Vec<X4> {
     let mut possible_components_to_lower = [0, 0, 0];
     let fun_orders = &x.q[fun * 3..fun * 3 + 3];
     possible_components_to_lower.clone_from_slice(fun_orders);
-    let component = find_component_to_lower(possible_components_to_lower);
+    let component = find_component_to_lower(&possible_components_to_lower);
 
     let (i1, i2): (u8, u8) = match component {
         Ok(0) => ([0, 1, 2, 3][fun], [4, 4, 5, 5][fun]),
@@ -148,7 +148,7 @@ fn apply_os4(x: X4) -> Vec<X4> {
         .collect();
 }
 
-fn get_k(z1: f64, z2: f64, r1: [f64; 3], r2: [f64; 3]) -> f64 {
+fn get_k(z1: f64, z2: f64, r1: &[f64; 3], r2: &[f64; 3]) -> f64 {
     let r12 = get_r12_squared(r1, r2);
     let f0 = z1 + z2;
     let f2 = if r12 > 0.0 {
@@ -164,10 +164,10 @@ fn get_aux(
     zb: f64,
     zc: f64,
     zd: f64,
-    ra: [f64; 3],
-    rb: [f64; 3],
-    rc: [f64; 3],
-    rd: [f64; 3],
+    ra: &[f64; 3],
+    rb: &[f64; 3],
+    rc: &[f64; 3],
+    rd: &[f64; 3],
 ) -> f64 {
     let k1 = get_k(za, zb, ra, rb);
     let k2 = get_k(zc, zd, rc, rd);
@@ -179,19 +179,19 @@ fn get_coulomb(
     zb: f64,
     zc: f64,
     zd: f64,
-    ra: [f64; 3],
-    rb: [f64; 3],
-    rc: [f64; 3],
-    rd: [f64; 3],
-    c: [u8; 12],
+    ra: &[f64; 3],
+    rb: &[f64; 3],
+    rc: &[f64; 3],
+    rd: &[f64; 3],
+    c: &[u8; 12],
 ) -> f64 {
     let rp = get_bi_center(za, zb, ra, rb);
     let rq = get_bi_center(zc, zd, rc, rd);
-    let rw = get_bi_center(za + zb, zc + zd, rp, rq);
+    let rw = get_bi_center(za + zb, zc + zd, &rp, &rq);
     let z = za + zb;
     let n = zc + zd;
     let rho = z * n / (z + n);
-    let t = rho * get_r12_squared(rp, rq);
+    let t = rho * get_r12_squared(&rp, &rq);
     let s = get_aux(za, zb, zc, zd, ra, rb, rc, rd);
 
     let prefac = vec![
@@ -259,7 +259,7 @@ fn get_coulomb(
     return integral;
 }
 
-fn get_bi_center(z1: f64, z2: f64, r1: [f64; 3], r2: [f64; 3]) -> [f64; 3] {
+fn get_bi_center(z1: f64, z2: f64, r1: &[f64; 3], r2: &[f64; 3]) -> [f64; 3] {
     let z = z1 + z2;
     let rx = (z1 * r1[0] + z2 * r2[0]) / z;
     let ry = (z1 * r1[1] + z2 * r2[1]) / z;
@@ -283,11 +283,11 @@ fn boys(n: u64, x: f64) -> f64 {
     }
 }
 
-fn get_r12_squared(r1: [f64; 3], r2: [f64; 3]) -> f64 {
+fn get_r12_squared(r1: &[f64; 3], r2: &[f64; 3]) -> f64 {
     return (r1[0] - r2[0]).powi(2) + (r1[1] - r2[1]).powi(2) + (r1[2] - r2[2]).powi(2);
 }
 
-fn find_fun_to_lower(q: Vec<i8>, n: usize) -> Result<usize, bool> {
+fn find_fun_to_lower(q: &Vec<i8>, n: usize) -> Result<usize, bool> {
     // Determine the total angular momentum on each center.
     let mut l = vec![];
     for i in 0..n {
@@ -316,7 +316,7 @@ fn find_fun_to_lower(q: Vec<i8>, n: usize) -> Result<usize, bool> {
     return Err(false);
 }
 
-fn find_component_to_lower(fun: [i8; 3]) -> Result<usize, bool> {
+fn find_component_to_lower(fun: &[i8; 3]) -> Result<usize, bool> {
     for (i, c) in fun.iter().enumerate() {
         if *c > 0 {
             return Ok(i);
@@ -354,11 +354,11 @@ fn apply_os2(mut x: X2, kind: X2kind) -> Vec<X2> {
 
     // Determine which basis function and component to lower.
     // The component is one of (x, y, z).
-    let mut fun = find_fun_to_lower(orders.to_vec(), 3);
+    let mut fun = find_fun_to_lower(&orders.to_vec(), 3);
     // Make sure to not choose the operator vrr until q is exhausted.
     let q_sum: i8 = x.q.iter().sum();
     if fun == Ok(2) && q_sum > 0 {
-        fun = find_fun_to_lower(x.q.to_vec(), 2)
+        fun = find_fun_to_lower(&x.q.to_vec(), 2)
     }
     if fun == Err(false) {
         x.kind = kind;
@@ -369,7 +369,7 @@ fn apply_os2(mut x: X2, kind: X2kind) -> Vec<X2> {
     let mut possible_components_to_lower = [0, 0, 0];
     let fun_orders = &orders[fun * 3..fun * 3 + 3];
     possible_components_to_lower.clone_from_slice(fun_orders);
-    let component = find_component_to_lower(possible_components_to_lower);
+    let component = find_component_to_lower(&possible_components_to_lower);
 
     // Determine the index of q to descend on.
     // where q = [xa, xb, ya, yb, za, zb].
@@ -637,7 +637,7 @@ fn apply_os2(mut x: X2, kind: X2kind) -> Vec<X2> {
         .collect();
 }
 
-pub fn get_overlap(za: f64, zb: f64, ra: [f64; 3], rb: [f64; 3], c: [usize; 6]) -> f64 {
+pub fn get_overlap(za: f64, zb: f64, ra: &[f64; 3], rb: &[f64; 3], c: &[usize; 6]) -> f64 {
     let z = za + zb;
     let e = za * zb / (za + zb);
     let rp = get_bi_center(za, zb, ra, rb);
@@ -680,7 +680,7 @@ pub fn get_overlap(za: f64, zb: f64, ra: [f64; 3], rb: [f64; 3], c: [usize; 6]) 
     return integral;
 }
 
-fn get_kinetic(za: f64, zb: f64, ra: [f64; 3], rb: [f64; 3], c: [u8; 6]) -> f64 {
+pub fn get_kinetic(za: f64, zb: f64, ra: &[f64; 3], rb: &[f64; 3], c: &[usize; 6]) -> f64 {
     let z = za + zb;
     let e = za * zb / (za + zb);
     let rp = get_bi_center(za, zb, ra, rb);
@@ -730,12 +730,19 @@ fn get_kinetic(za: f64, zb: f64, ra: [f64; 3], rb: [f64; 3], c: [u8; 6]) -> f64 
     return integral;
 }
 
-fn get_nuclear(za: f64, zb: f64, ra: [f64; 3], rb: [f64; 3], rc: [f64; 3], c: [u8; 6]) -> f64 {
+pub fn get_nuclear(
+    za: f64,
+    zb: f64,
+    ra: &[f64; 3],
+    rb: &[f64; 3],
+    rc: &[f64; 3],
+    c: &[usize; 6],
+) -> f64 {
     let z = za + zb;
     let rp = get_bi_center(za, zb, ra, rb);
-    let pc = get_r12_squared(rp, rc);
+    let pc = get_r12_squared(&rp, rc);
     let u = z * pc;
-    let aux = -2.0 * (z / PI).powf(0.5) * get_overlap(za, zb, ra, rb, [0, 0, 0, 0, 0, 0]);
+    let aux = -2.0 * (z / PI).powf(0.5) * get_overlap(za, zb, ra, rb, &[0, 0, 0, 0, 0, 0]);
 
     let prefac = vec![
         rp[0] - ra[0],
@@ -779,15 +786,15 @@ fn get_nuclear(za: f64, zb: f64, ra: [f64; 3], rb: [f64; 3], rc: [f64; 3], c: [u
 fn get_moment(
     za: f64,
     zb: f64,
-    ra: [f64; 3],
-    rb: [f64; 3],
-    rc: [f64; 3],
-    c: [u8; 6],
-    order: [u8; 3],
+    ra: &[f64; 3],
+    rb: &[f64; 3],
+    rc: &[f64; 3],
+    c: &[u8; 6],
+    order: &[u8; 3],
 ) -> f64 {
     let z = za + zb;
     let rp = get_bi_center(za, zb, ra, rb);
-    let aux = get_overlap(za, zb, ra, rb, [0, 0, 0, 0, 0, 0]);
+    let aux = get_overlap(za, zb, ra, rb, &[0, 0, 0, 0, 0, 0]);
 
     let prefac = vec![
         rp[0] - ra[0],
@@ -844,44 +851,44 @@ mod tests {
 
     #[test]
     fn test_find_fun_to_lower() {
-        assert_eq!(find_fun_to_lower([1, 0, 0, 0, 0, 0].to_vec(), 2), Ok(0));
-        assert_eq!(find_fun_to_lower([0, 1, 0, 0, 0, 0].to_vec(), 2), Ok(0));
-        assert_eq!(find_fun_to_lower([0, 0, 1, 0, 0, 0].to_vec(), 2), Ok(0));
-        assert_eq!(find_fun_to_lower([0, 0, 0, 1, 0, 0].to_vec(), 2), Ok(1));
-        assert_eq!(find_fun_to_lower([0, 0, 0, 0, 1, 0].to_vec(), 2), Ok(1));
-        assert_eq!(find_fun_to_lower([0, 0, 0, 0, 0, 1].to_vec(), 2), Ok(1));
+        assert_eq!(find_fun_to_lower(&[1, 0, 0, 0, 0, 0].to_vec(), 2), Ok(0));
+        assert_eq!(find_fun_to_lower(&[0, 1, 0, 0, 0, 0].to_vec(), 2), Ok(0));
+        assert_eq!(find_fun_to_lower(&[0, 0, 1, 0, 0, 0].to_vec(), 2), Ok(0));
+        assert_eq!(find_fun_to_lower(&[0, 0, 0, 1, 0, 0].to_vec(), 2), Ok(1));
+        assert_eq!(find_fun_to_lower(&[0, 0, 0, 0, 1, 0].to_vec(), 2), Ok(1));
+        assert_eq!(find_fun_to_lower(&[0, 0, 0, 0, 0, 1].to_vec(), 2), Ok(1));
         assert_eq!(
-            find_fun_to_lower([0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0].to_vec(), 4),
+            find_fun_to_lower(&[0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0].to_vec(), 4),
             Ok(1)
         );
         assert_eq!(
-            find_fun_to_lower([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1].to_vec(), 4),
+            find_fun_to_lower(&[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1].to_vec(), 4),
             Ok(3)
         );
         assert_eq!(
-            find_fun_to_lower([1, 0, 0, 0, 0, 0, 0, 0, 1].to_vec(), 3),
+            find_fun_to_lower(&[1, 0, 0, 0, 0, 0, 0, 0, 1].to_vec(), 3),
             Ok(0)
         );
         assert_eq!(
-            find_fun_to_lower([0, 0, 0, 0, 0, 0, 0, 0, 1].to_vec(), 3),
+            find_fun_to_lower(&[0, 0, 0, 0, 0, 0, 0, 0, 1].to_vec(), 3),
             Ok(2)
         );
         assert_eq!(
-            find_fun_to_lower([0, 0, 0, 0, 1, 0, 0, 0, 1].to_vec(), 3),
+            find_fun_to_lower(&[0, 0, 0, 0, 1, 0, 0, 0, 1].to_vec(), 3),
             Ok(1)
         );
         assert_eq!(
-            find_fun_to_lower([0, 0, 0, 0, 2, 0, 0, 0, 1].to_vec(), 3),
+            find_fun_to_lower(&[0, 0, 0, 0, 2, 0, 0, 0, 1].to_vec(), 3),
             Ok(2)
         );
     }
 
     #[test]
     fn test_find_component_to_lower() {
-        assert_eq!(find_component_to_lower([0, 0, 1]), Ok(2));
-        assert_eq!(find_component_to_lower([0, 1, 1]), Ok(1));
-        assert_eq!(find_component_to_lower([1, 0, 1]), Ok(0));
-        assert_eq!(find_component_to_lower([0, 0, 0]), Err(false));
+        assert_eq!(find_component_to_lower(&[0, 0, 1]), Ok(2));
+        assert_eq!(find_component_to_lower(&[0, 1, 1]), Ok(1));
+        assert_eq!(find_component_to_lower(&[1, 0, 1]), Ok(0));
+        assert_eq!(find_component_to_lower(&[0, 0, 0]), Err(false));
     }
 
     #[test]
@@ -904,11 +911,11 @@ mod tests {
             zb,
             zc,
             zd,
-            ra,
-            rb,
-            rc,
-            rd,
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            &ra,
+            &rb,
+            &rc,
+            &rd,
+            &[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         );
         assert!((integral - reference).abs() < thresh);
 
@@ -918,11 +925,11 @@ mod tests {
             zb,
             zc,
             zd,
-            ra,
-            rb,
-            rc,
-            rd,
-            [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            &ra,
+            &rb,
+            &rc,
+            &rd,
+            &[1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         );
         assert!((integral - reference).abs() < thresh);
 
@@ -932,11 +939,11 @@ mod tests {
             zb,
             zc,
             zd,
-            ra,
-            rb,
-            rc,
-            rd,
-            [2, 1, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0],
+            &ra,
+            &rb,
+            &rc,
+            &rd,
+            &[2, 1, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0],
         );
         assert!((integral - reference).abs() < thresh);
     }
@@ -950,16 +957,16 @@ mod tests {
 
         let thresh = 1.0e-16;
 
-        let integral = get_overlap(za, zb, ra, rb, [0, 0, 0, 0, 0, 0]);
+        let integral = get_overlap(za, zb, &ra, &rb, &[0, 0, 0, 0, 0, 0]);
         assert!((integral - 0.20373275913014607).abs() < thresh);
 
-        let integral = get_overlap(za, zb, ra, rb, [1, 0, 0, 0, 0, 0]);
+        let integral = get_overlap(za, zb, &ra, &rb, &[1, 0, 0, 0, 0, 0]);
         assert!((integral - 0.062005622343957505).abs() < thresh);
 
-        let integral = get_overlap(za, zb, ra, rb, [1, 1, 0, 1, 1, 0]);
+        let integral = get_overlap(za, zb, &ra, &rb, &[1, 1, 0, 1, 1, 0]);
         assert!((integral - -0.00043801221837779696).abs() < thresh);
 
-        let integral = get_overlap(za, zb, ra, rb, [2, 1, 0, 1, 1, 0]);
+        let integral = get_overlap(za, zb, &ra, &rb, &[2, 1, 0, 1, 1, 0]);
         assert!((integral - -0.0002385994651113168).abs() < thresh);
     }
 
@@ -972,13 +979,13 @@ mod tests {
 
         let thresh = 1.0e-16;
 
-        let integral = get_kinetic(za, zb, ra, rb, [0, 0, 0, 0, 0, 0]);
+        let integral = get_kinetic(za, zb, &ra, &rb, &[0, 0, 0, 0, 0, 0]);
         assert!((integral - 0.3652714583525358).abs() < thresh);
 
-        let integral = get_kinetic(za, zb, ra, rb, [1, 0, 0, 0, 0, 0]);
+        let integral = get_kinetic(za, zb, &ra, &rb, &[1, 0, 0, 0, 0, 0]);
         assert!((integral - 0.2514265587836556).abs() < thresh);
 
-        let integral = get_kinetic(za, zb, ra, rb, [2, 2, 2, 2, 2, 2]);
+        let integral = get_kinetic(za, zb, &ra, &rb, &[2, 2, 2, 2, 2, 2]);
         assert!((integral - -7.40057384314e-05).abs() < thresh);
     }
 
@@ -993,16 +1000,16 @@ mod tests {
         // TODO why is this thresh lower now?
         let thresh = 1.0e-15;
 
-        let integral = get_nuclear(za, zb, ra, rb, rc, [0, 0, 0, 0, 0, 0]);
+        let integral = get_nuclear(za, zb, &ra, &rb, &rc, &[0, 0, 0, 0, 0, 0]);
         assert!((integral - -0.49742209545104593).abs() < thresh);
 
-        let integral = get_nuclear(za, zb, ra, rb, rc, [1, 0, 0, 0, 0, 0]);
+        let integral = get_nuclear(za, zb, &ra, &rb, &rc, &[1, 0, 0, 0, 0, 0]);
         assert!((integral - -0.15987439458254471).abs() < thresh);
 
-        let integral = get_nuclear(za, zb, ra, rb, rc, [2, 2, 2, 0, 0, 0]);
+        let integral = get_nuclear(za, zb, &ra, &rb, &rc, &[2, 2, 2, 0, 0, 0]);
         assert!((integral - -0.003801373531942607).abs() < thresh);
 
-        let integral = get_nuclear(za, zb, ra, rb, rc, [1, 1, 1, 1, 1, 1]);
+        let integral = get_nuclear(za, zb, &ra, &rb, &rc, &[1, 1, 1, 1, 1, 1]);
         assert!((integral - 8.8415484347060993e-5).abs() < thresh);
     }
 
@@ -1016,7 +1023,7 @@ mod tests {
 
         let thresh = 1.0e-16;
 
-        let integral = get_moment(za, zb, ra, rb, rc, [0, 0, 2, 0, 0, 0], [0, 0, 1]);
+        let integral = get_moment(za, zb, &ra, &rb, &rc, &[0, 0, 2, 0, 0, 0], &[0, 0, 1]);
         assert!((integral - -0.01330515491323708).abs() < thresh);
     }
 

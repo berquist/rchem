@@ -1,3 +1,5 @@
+#![allow(non_snake_case)]
+
 use std::collections::HashMap as Map;
 use std::collections::HashSet as Set;
 use std::f64::consts::PI;
@@ -158,7 +160,6 @@ struct CGTO {
 }
 
 impl CGTO {
-
     fn from_pgtos(pgtos: &Vec<PGTO>, coefs: &Vec<f64>) -> CGTO {
         // TODO Ok and Err?
         assert!(pgtos.len() > 0);
@@ -221,7 +222,7 @@ fn overlap_pgto(a: &PGTO, b: &PGTO) -> f64 {
         b.powers[1],
         b.powers[2],
     ];
-    a.norm * b.norm * integrals::get_overlap(a.exponent, b.exponent, a.origin, b.origin, powers)
+    a.norm * b.norm * integrals::get_overlap(a.exponent, b.exponent, &a.origin, &b.origin, &powers)
 }
 
 fn overlap_cgto_left(a: &CGTO, b: &PGTO) -> f64 {
@@ -246,4 +247,89 @@ pub fn S(basis_set: &Basis) -> Array<f64, ndarray::Ix2> {
         }
     }
     mat
+}
+
+fn kinetic_pgto(a: &PGTO, b: &PGTO) -> f64 {
+    let powers = [
+        a.powers[0],
+        a.powers[1],
+        a.powers[2],
+        b.powers[0],
+        b.powers[1],
+        b.powers[2],
+    ];
+    a.norm * b.norm * integrals::get_kinetic(a.exponent, b.exponent, &a.origin, &b.origin, &powers)
+}
+
+fn kinetic_cgto_left(a: &CGTO, b: &PGTO) -> f64 {
+    a.primitives
+        .iter()
+        .zip(&a.coefs)
+        .map(|(pa, ca)| ca * kinetic_pgto(&pa, &b))
+        .sum()
+}
+
+pub fn T(basis_set: &Basis) -> Array<f64, ndarray::Ix2> {
+    let dim = basis_set.cgtos.len();
+    let mut mat: Array<f64, _> = Array::zeros((dim, dim));
+    for (i, a) in basis_set.cgtos.iter().enumerate() {
+        for (j, b) in basis_set.cgtos.iter().enumerate() {
+            mat[[i, j]] = b
+                .primitives
+                .iter()
+                .zip(&b.coefs)
+                .map(|(pb, cb)| cb * kinetic_cgto_left(&a, &pb))
+                .sum();
+        }
+    }
+    mat
+}
+
+fn nuclear_pgto(a: &PGTO, b: &PGTO, atomcoords: &[f64; 3]) -> f64 {
+    let powers = [
+        a.powers[0],
+        a.powers[1],
+        a.powers[2],
+        b.powers[0],
+        b.powers[1],
+        b.powers[2],
+    ];
+    a.norm
+        * b.norm
+        * integrals::get_nuclear(
+            a.exponent, b.exponent, &a.origin, &b.origin, atomcoords, &powers,
+        )
+}
+
+fn nuclear_cgto_left(a: &CGTO, b: &PGTO, atomcoords: &[f64; 3]) -> f64 {
+    a.primitives
+        .iter()
+        .zip(&a.coefs)
+        .map(|(pa, ca)| ca * nuclear_pgto(&pa, &b, atomcoords))
+        .sum()
+}
+
+pub fn V(
+    basis_set: &Basis,
+    atomcoords: &[[f64; 3]],
+    atomnos: &Vec<u64>,
+) -> Array<f64, ndarray::Ix2> {
+    let dim = basis_set.cgtos.len();
+    let natoms = atomcoords.len();
+    let mut mat: Array<f64, _> = Array::zeros((dim, dim, natoms));
+    for (c, single_atomcoords) in atomcoords.iter().enumerate() {
+        let atomno = atomnos[c] as f64;
+        for (i, a) in basis_set.cgtos.iter().enumerate() {
+            for (j, b) in basis_set.cgtos.iter().enumerate() {
+                let elem: f64 = b
+                    .primitives
+                    .iter()
+                    .zip(&b.coefs)
+                    .map(|(pb, cb)| cb * nuclear_cgto_left(&a, &pb, single_atomcoords))
+                    .sum();
+                mat[[i, j, c]] = atomno * elem;
+            }
+        }
+    }
+    mat.sum_axis(ndarray::Axis(2))
 }

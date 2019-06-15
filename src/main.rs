@@ -32,4 +32,6 @@ fn main() {
     let basis_set = basis::Basis::new(&atomnos, &atomcoords, "STO-3G");
     println!("{:#?}", basis_set);
     println!("{}", basis::S(&basis_set));
+    println!("{}", basis::T(&basis_set));
+    println!("{}", basis::V(&basis_set, &atomcoords, &atomnos));
 }
