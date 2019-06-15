@@ -31,7 +31,10 @@ fn main() {
     let atomnos: Vec<_> = (0..natom).map(|i| frame.atom(i).atomic_number()).collect();
     let basis_set = basis::Basis::new(&atomnos, &atomcoords, "STO-3G");
     println!("{:#?}", basis_set);
-    println!("{}", basis::S(&basis_set));
-    println!("{}", basis::T(&basis_set));
-    println!("{}", basis::V(&basis_set, &atomcoords, &atomnos));
+
+    let S = basis::S(&basis_set);
+    let T = basis::T(&basis_set);
+    let V = basis::V(&basis_set, &atomcoords, &atomnos);
+    let H = T + V;
+    println!("{:#?}", H);
 }
