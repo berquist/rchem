@@ -3,6 +3,8 @@ use std::collections::HashSet as Set;
 use std::f64::consts::PI;
 
 use cpython::{PyDict, Python};
+use ndarray;
+use ndarray::Array;
 use serde::{Deserialize, Deserializer};
 use serde_json;
 
@@ -112,19 +114,19 @@ fn fact2(n: isize) -> isize {
 }
 
 #[derive(Clone, Debug)]
-pub struct PGTO {
+struct PGTO {
     origin: [f64; 3],
-    exponent: f64,
     powers: [usize; 3],
+    exponent: f64,
     norm: f64,
 }
 
 impl PGTO {
-    fn new(origin: [f64; 3], exponent: f64, powers: [usize; 3]) -> PGTO {
+    fn new(origin: [f64; 3], powers: [usize; 3], exponent: f64) -> PGTO {
         let mut ret = PGTO {
-            origin,
-            exponent,
-            powers,
+            origin: origin,
+            powers: powers,
+            exponent: exponent,
             norm: 0.0,
         };
         ret.norm = ret.normalization();
@@ -148,43 +150,25 @@ impl PGTO {
 }
 
 #[derive(Debug)]
-pub struct CGTO {
+struct CGTO {
     origin: [f64; 3],
-    exponents: Vec<f64>,
     powers: [usize; 3],
-    norms: Vec<f64>,
     coefs: Vec<f64>,
+    primitives: Vec<PGTO>,
 }
 
 impl CGTO {
-    pub fn new(
-        origin: [f64; 3],
-        exponents: Vec<f64>,
-        powers: [usize; 3],
-        norms: Vec<f64>,
-        coefs: Vec<f64>,
-    ) -> CGTO {
-        // Do a validation pass before forming the contracted function. All
-        // PGTOs should have the same origin and powers.
-        // pgtos.for_each(|x| println!("{:?}", x));
-        CGTO {
-            origin: origin,
-            exponents: exponents,
-            powers: powers,
-            norms: norms,
-            coefs: coefs,
-        }
-    }
 
-    pub fn from_pgtos(pgtos: &Vec<PGTO>, coefs: &Vec<f64>) -> CGTO {
+    fn from_pgtos(pgtos: &Vec<PGTO>, coefs: &Vec<f64>) -> CGTO {
         // TODO Ok and Err?
         assert!(pgtos.len() > 0);
         CGTO {
             origin: pgtos[0].origin,
-            exponents: pgtos.iter().map(|pgto| pgto.exponent).collect(),
             powers: pgtos[0].powers,
-            norms: pgtos.iter().map(|pgto| pgto.norm).collect(),
+            // exponents: pgtos.iter().map(|pgto| pgto.exponent).collect(),
+            // norms: pgtos.iter().map(|pgto| pgto.norm).collect(),
             coefs: coefs.clone(),
+            primitives: pgtos.clone(),
         }
     }
 }
@@ -213,7 +197,7 @@ impl Basis {
                         let pgtos: Vec<_> = shell
                             .exponents
                             .iter()
-                            .map(|exponent| PGTO::new(atomcoords.clone(), *exponent, powers))
+                            .map(|exponent| PGTO::new(atomcoords.clone(), powers, *exponent))
                             .collect();
                         let cgto = CGTO::from_pgtos(&pgtos, &shell.coefficients[*angular_momentum]);
                         cgtos.push(cgto);
@@ -228,7 +212,7 @@ impl Basis {
     }
 }
 
-fn S(a: &PGTO, b: &PGTO) -> f64 {
+fn overlap_pgto(a: &PGTO, b: &PGTO) -> f64 {
     let powers = [
         a.powers[0],
         a.powers[1],
@@ -238,4 +222,28 @@ fn S(a: &PGTO, b: &PGTO) -> f64 {
         b.powers[2],
     ];
     a.norm * b.norm * integrals::get_overlap(a.exponent, b.exponent, a.origin, b.origin, powers)
+}
+
+fn overlap_cgto_left(a: &CGTO, b: &PGTO) -> f64 {
+    a.primitives
+        .iter()
+        .zip(&a.coefs)
+        .map(|(pa, ca)| ca * overlap_pgto(&pa, &b))
+        .sum()
+}
+
+pub fn S(basis_set: &Basis) -> Array<f64, ndarray::Ix2> {
+    let dim = basis_set.cgtos.len();
+    let mut mat: Array<f64, _> = Array::zeros((dim, dim));
+    for (i, a) in basis_set.cgtos.iter().enumerate() {
+        for (j, b) in basis_set.cgtos.iter().enumerate() {
+            mat[[i, j]] = b
+                .primitives
+                .iter()
+                .zip(&b.coefs)
+                .map(|(pb, cb)| cb * overlap_cgto_left(&a, &pb))
+                .sum();
+        }
+    }
+    mat
 }
