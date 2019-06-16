@@ -55,17 +55,31 @@ fn main() {
     let F_prime = symm_orthog.t().dot(&H).dot(&symm_orthog);
     let (eps_vec, C_prime) = F_prime.eigh(UPLO::Upper).unwrap();
     let C = symm_orthog.dot(&C_prime);
-    let D = build_density(&C, 5);
+    let mut D = build_density(&C, 5);
 
-    let e_elec_new = calc_elec_energy(&D, &H, &H);
-    println!("{}", e_elec_new);
+    let mut e_elec_new = calc_elec_energy(&D, &H, &H);
 
     let thresh_e = 1.0e-15;
     let thresh_d = 1.0e-10;
-    let max_iterations: u64 = 1024;
+    let max_iterations = 1024;
     let mut iteration = 0;
 
     while iteration < max_iterations {
+        let F = build_fock(&D, &H, &basis_set);
+        let F_prime = symm_orthog.t().dot(&F).dot(&symm_orthog);
+        let (eps_vec, C_prime) = F_prime.eigh(UPLO::Upper).unwrap();
+        let C = symm_orthog.dot(&C_prime);
+        // let D_old = D.clone();
+        D = build_density(&C, 5);
+        let e_elec_old = e_elec_new;
+        e_elec_new = calc_elec_energy(&D, &H, &F);
+        let e_total = e_elec_new;
+        let delta_e = e_elec_new - e_elec_old;
+        println!("{} {} {}", iteration, e_elec_new, delta_e);
+        if delta_e.abs() < thresh_e {
+            println!("Convergence achieved!");
+            break;
+        }
         iteration += 1;
     }
 }
@@ -86,4 +100,12 @@ fn build_density(C: &Array<f64, Ix2>, nocc: usize) -> Array<f64, Ix2> {
 
 fn calc_elec_energy(D: &Array<f64, Ix2>, H: &Array<f64, Ix2>, F: &Array<f64, Ix2>) -> f64 {
     ((H + F) * D).sum()
+}
+
+fn build_fock(
+    D: &Array<f64, Ix2>,
+    H: &Array<f64, Ix2>,
+    basis_set: &basis::Basis,
+) -> Array<f64, Ix2> {
+    (2.0 * basis::J(&basis_set, &D) - basis::K(&basis_set, &D)) + H
 }

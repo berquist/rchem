@@ -174,7 +174,7 @@ fn get_aux(
     return k1 * k2 / (za + zb + zc + zd).sqrt();
 }
 
-fn get_coulomb(
+pub fn get_coulomb(
     za: f64,
     zb: f64,
     zc: f64,
@@ -183,7 +183,7 @@ fn get_coulomb(
     rb: &[f64; 3],
     rc: &[f64; 3],
     rd: &[f64; 3],
-    c: &[u8; 12],
+    c: &[usize; 12],
 ) -> f64 {
     let rp = get_bi_center(za, zb, ra, rb);
     let rq = get_bi_center(zc, zd, rc, rd);
@@ -243,11 +243,11 @@ fn get_coulomb(
     };
     let expansion = apply_os4(fun);
     let mut integral = 0.0;
-    let c_sum: u8 = c.iter().sum();
+    let c_sum: usize = c.iter().sum();
     for i in 0..(c_sum + 1) {
-        let b = boys(i.into(), t) * s;
+        let b = boys(i as u64, t) * s;
         for f in expansion.iter() {
-            if f.order == i {
+            if f.order as usize == i {
                 let mut g = 1.0;
                 for k in f.prefactors.iter() {
                     g *= prefac[*k];

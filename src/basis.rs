@@ -5,8 +5,7 @@ use std::collections::HashSet as Set;
 use std::f64::consts::PI;
 
 use cpython::{PyDict, Python};
-use ndarray;
-use ndarray::Array;
+use ndarray::{Array, Axis, Ix2};
 use serde::{Deserialize, Deserializer};
 use serde_json;
 
@@ -233,7 +232,7 @@ fn overlap_cgto_left(a: &CGTO, b: &PGTO) -> f64 {
         .sum()
 }
 
-pub fn S(basis_set: &Basis) -> Array<f64, ndarray::Ix2> {
+pub fn S(basis_set: &Basis) -> Array<f64, Ix2> {
     let dim = basis_set.cgtos.len();
     let mut mat: Array<f64, _> = Array::zeros((dim, dim));
     for (i, a) in basis_set.cgtos.iter().enumerate() {
@@ -269,7 +268,7 @@ fn kinetic_cgto_left(a: &CGTO, b: &PGTO) -> f64 {
         .sum()
 }
 
-pub fn T(basis_set: &Basis) -> Array<f64, ndarray::Ix2> {
+pub fn T(basis_set: &Basis) -> Array<f64, Ix2> {
     let dim = basis_set.cgtos.len();
     let mut mat: Array<f64, _> = Array::zeros((dim, dim));
     for (i, a) in basis_set.cgtos.iter().enumerate() {
@@ -309,11 +308,7 @@ fn nuclear_cgto_left(a: &CGTO, b: &PGTO, atomcoords: &[f64; 3]) -> f64 {
         .sum()
 }
 
-pub fn V(
-    basis_set: &Basis,
-    atomcoords: &[[f64; 3]],
-    atomnos: &Vec<u64>,
-) -> Array<f64, ndarray::Ix2> {
+pub fn V(basis_set: &Basis, atomcoords: &[[f64; 3]], atomnos: &Vec<u64>) -> Array<f64, Ix2> {
     let dim = basis_set.cgtos.len();
     let natoms = atomcoords.len();
     let mut mat: Array<f64, _> = Array::zeros((dim, dim, natoms));
@@ -331,5 +326,86 @@ pub fn V(
             }
         }
     }
-    mat.sum_axis(ndarray::Axis(2))
+    mat.sum_axis(Axis(2))
+}
+
+fn coulomb_pgto(a: &PGTO, b: &PGTO, c: &PGTO, d: &PGTO) -> f64 {
+    let powers = [
+        a.powers[0],
+        a.powers[1],
+        a.powers[2],
+        b.powers[0],
+        b.powers[1],
+        b.powers[2],
+        c.powers[0],
+        c.powers[1],
+        c.powers[2],
+        d.powers[0],
+        d.powers[1],
+        d.powers[2],
+    ];
+    a.norm
+        * b.norm
+        * c.norm
+        * d.norm
+        * integrals::get_coulomb(
+            a.exponent, b.exponent, c.exponent, d.exponent, &a.origin, &b.origin, &c.origin,
+            &d.origin, &powers,
+        )
+}
+
+pub fn J(basis_set: &Basis, D: &Array<f64, Ix2>) -> Array<f64, Ix2> {
+    let dim = basis_set.cgtos.len();
+    let mut mat: Array<f64, _> = Array::zeros((dim, dim));
+    for (mu, a) in basis_set.cgtos.iter().enumerate() {
+        for (nu, b) in basis_set.cgtos.iter().enumerate() {
+            for (lambda, c) in basis_set.cgtos.iter().enumerate() {
+                for (sigma, d) in basis_set.cgtos.iter().enumerate() {
+                    for (pa, ca) in a.primitives.iter().zip(&a.coefs) {
+                        for (pb, cb) in b.primitives.iter().zip(&b.coefs) {
+                            for (pc, cc) in c.primitives.iter().zip(&c.coefs) {
+                                for (pd, cd) in d.primitives.iter().zip(&d.coefs) {
+                                    mat[[mu, nu]] += ca
+                                        * cb
+                                        * cc
+                                        * cd
+                                        * coulomb_pgto(&pa, &pb, &pc, &pd)
+                                        * D[[lambda, sigma]];
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    mat
+}
+
+pub fn K(basis_set: &Basis, D: &Array<f64, Ix2>) -> Array<f64, Ix2> {
+    let dim = basis_set.cgtos.len();
+    let mut mat: Array<f64, _> = Array::zeros((dim, dim));
+    for (mu, a) in basis_set.cgtos.iter().enumerate() {
+        for (nu, b) in basis_set.cgtos.iter().enumerate() {
+            for (lambda, c) in basis_set.cgtos.iter().enumerate() {
+                for (sigma, d) in basis_set.cgtos.iter().enumerate() {
+                    for (pa, ca) in a.primitives.iter().zip(&a.coefs) {
+                        for (pb, cb) in b.primitives.iter().zip(&b.coefs) {
+                            for (pc, cc) in c.primitives.iter().zip(&c.coefs) {
+                                for (pd, cd) in d.primitives.iter().zip(&d.coefs) {
+                                    mat[[mu, nu]] += ca
+                                        * cb
+                                        * cc
+                                        * cd
+                                        * coulomb_pgto(&pa, &pc, &pb, &pd)
+                                        * D[[lambda, sigma]];
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    mat
 }
