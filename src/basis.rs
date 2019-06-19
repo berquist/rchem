@@ -5,7 +5,7 @@ use std::collections::HashSet as Set;
 use std::f64::consts::PI;
 
 use cpython::{PyDict, Python};
-use ndarray::{Array, Axis, Ix2};
+use ndarray::{Array, Axis, Ix2, Ix4};
 use serde::{Deserialize, Deserializer};
 use serde_json;
 
@@ -354,7 +354,7 @@ fn coulomb_pgto(a: &PGTO, b: &PGTO, c: &PGTO, d: &PGTO) -> f64 {
         )
 }
 
-pub fn JK(basis_set: &Basis, D: &Array<f64, Ix2>) -> (Array<f64, Ix2>, Array<f64, Ix2>) {
+pub fn JK_direct(basis_set: &Basis, D: &Array<f64, Ix2>) -> (Array<f64, Ix2>, Array<f64, Ix2>) {
     let dim = basis_set.cgtos.len();
     let mut J: Array<f64, _> = Array::zeros((dim, dim));
     let mut K: Array<f64, _> = Array::zeros((dim, dim));
@@ -382,6 +382,47 @@ pub fn JK(basis_set: &Basis, D: &Array<f64, Ix2>) -> (Array<f64, Ix2>, Array<f64
                             }
                         }
                     }
+                }
+            }
+        }
+    }
+    (J, K)
+}
+
+pub fn build_I(basis_set: &Basis) -> Array<f64, Ix4> {
+    let dim = basis_set.cgtos.len();
+    let mut I: Array<f64, _> = Array::zeros((dim, dim, dim, dim));
+    for (mu, a) in basis_set.cgtos.iter().enumerate() {
+        for (nu, b) in basis_set.cgtos.iter().enumerate() {
+            for (lambda, c) in basis_set.cgtos.iter().enumerate() {
+                for (sigma, d) in basis_set.cgtos.iter().enumerate() {
+                    for (pa, ca) in a.primitives.iter().zip(&a.coefs) {
+                        for (pb, cb) in b.primitives.iter().zip(&b.coefs) {
+                            for (pc, cc) in c.primitives.iter().zip(&c.coefs) {
+                                for (pd, cd) in d.primitives.iter().zip(&d.coefs) {
+                                    I[[mu, nu, lambda, sigma]] +=
+                                        ca * cb * cc * cd * coulomb_pgto(&pa, &pb, &pc, &pd);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    I
+}
+
+pub fn JK_inmem(I: &Array<f64, Ix4>, D: &Array<f64, Ix2>) -> (Array<f64, Ix2>, Array<f64, Ix2>) {
+    let dim = I.shape()[0];
+    let mut J: Array<f64, _> = Array::zeros((dim, dim));
+    let mut K: Array<f64, _> = Array::zeros((dim, dim));
+    for mu in 0..dim {
+        for nu in 0..dim {
+            for lambda in 0..dim {
+                for sigma in 0..dim {
+                    J[[mu, nu]] += I[[mu, nu, lambda, sigma]] * D[[lambda, sigma]];
+                    K[[mu, nu]] += I[[mu, lambda, nu, sigma]] * D[[lambda, sigma]];
                 }
             }
         }

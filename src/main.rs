@@ -3,7 +3,7 @@
 use std::f64;
 
 use chemfiles;
-use ndarray::{Array, Axis, Ix1, Ix2, Slice};
+use ndarray::{Array, Axis, Ix1, Ix2, Ix4, Slice};
 use ndarray_linalg::*;
 
 mod basis;
@@ -38,6 +38,8 @@ fn main() {
     let basis_set = basis::Basis::new(&atomnos, &atomcoords, "STO-2G");
     println!("{:#?}", basis_set);
 
+    let I = basis::build_I(&basis_set);
+
     let S = basis::S(&basis_set);
 
     let (overlap_eigvals, overlap_eigvecs) = S.eigh(UPLO::Upper).unwrap();
@@ -65,7 +67,7 @@ fn main() {
     let mut iteration = 0;
 
     while iteration < max_iterations {
-        let F = build_fock(&D, &H, &basis_set);
+        let F = build_fock_inmem(&D, &H, &I);
         let F_prime = symm_orthog.t().dot(&F).dot(&symm_orthog);
         let (eps_vec, C_prime) = F_prime.eigh(UPLO::Upper).unwrap();
         let C = symm_orthog.dot(&C_prime);
@@ -107,6 +109,15 @@ fn build_fock(
     H: &Array<f64, Ix2>,
     basis_set: &basis::Basis,
 ) -> Array<f64, Ix2> {
-    let (J, K) = basis::JK(&basis_set, &D);
+    let (J, K) = basis::JK_direct(&basis_set, &D);
+    (2.0 * J - K) + H
+}
+
+fn build_fock_inmem(
+    D: &Array<f64, Ix2>,
+    H: &Array<f64, Ix2>,
+    I: &Array<f64, Ix4>,
+) -> Array<f64, Ix2> {
+    let (J, K) = basis::JK_inmem(&I, &D);
     (2.0 * J - K) + H
 }
