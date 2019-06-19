@@ -35,7 +35,7 @@ fn main() {
     let natom = frame.size();
     let atomcoords = frame.positions();
     let atomnos: Vec<_> = (0..natom).map(|i| frame.atom(i).atomic_number()).collect();
-    let basis_set = basis::Basis::new(&atomnos, &atomcoords, "STO-3G");
+    let basis_set = basis::Basis::new(&atomnos, &atomcoords, "STO-2G");
     println!("{:#?}", basis_set);
 
     let S = basis::S(&basis_set);
@@ -59,8 +59,8 @@ fn main() {
 
     let mut e_elec_new = calc_elec_energy(&D, &H, &H);
 
-    let thresh_e = 1.0e-15;
-    let thresh_d = 1.0e-10;
+    let thresh_e = 1.0e-11;
+    // let thresh_d = 1.0e-10;
     let max_iterations = 1024;
     let mut iteration = 0;
 
