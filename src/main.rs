@@ -75,7 +75,7 @@ fn main() {
         e_elec_new = calc_elec_energy(&D, &H, &F);
         let e_total = e_elec_new;
         let delta_e = e_elec_new - e_elec_old;
-        println!("{} {} {}", iteration, e_elec_new, delta_e);
+        println!("{:4} {:20.12} {:20.12}", iteration, e_elec_new, delta_e);
         if delta_e.abs() < thresh_e {
             println!("Convergence achieved!");
             break;
@@ -107,5 +107,6 @@ fn build_fock(
     H: &Array<f64, Ix2>,
     basis_set: &basis::Basis,
 ) -> Array<f64, Ix2> {
-    (2.0 * basis::J(&basis_set, &D) - basis::K(&basis_set, &D)) + H
+    let (J, K) = basis::JK(&basis_set, &D);
+    (2.0 * J - K) + H
 }

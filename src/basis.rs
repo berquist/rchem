@@ -354,9 +354,10 @@ fn coulomb_pgto(a: &PGTO, b: &PGTO, c: &PGTO, d: &PGTO) -> f64 {
         )
 }
 
-pub fn J(basis_set: &Basis, D: &Array<f64, Ix2>) -> Array<f64, Ix2> {
+pub fn JK(basis_set: &Basis, D: &Array<f64, Ix2>) -> (Array<f64, Ix2>, Array<f64, Ix2>) {
     let dim = basis_set.cgtos.len();
-    let mut mat: Array<f64, _> = Array::zeros((dim, dim));
+    let mut J: Array<f64, _> = Array::zeros((dim, dim));
+    let mut K: Array<f64, _> = Array::zeros((dim, dim));
     for (mu, a) in basis_set.cgtos.iter().enumerate() {
         for (nu, b) in basis_set.cgtos.iter().enumerate() {
             for (lambda, c) in basis_set.cgtos.iter().enumerate() {
@@ -365,35 +366,13 @@ pub fn J(basis_set: &Basis, D: &Array<f64, Ix2>) -> Array<f64, Ix2> {
                         for (pb, cb) in b.primitives.iter().zip(&b.coefs) {
                             for (pc, cc) in c.primitives.iter().zip(&c.coefs) {
                                 for (pd, cd) in d.primitives.iter().zip(&d.coefs) {
-                                    mat[[mu, nu]] += ca
+                                    J[[mu, nu]] += ca
                                         * cb
                                         * cc
                                         * cd
                                         * coulomb_pgto(&pa, &pb, &pc, &pd)
                                         * D[[lambda, sigma]];
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-    mat
-}
-
-pub fn K(basis_set: &Basis, D: &Array<f64, Ix2>) -> Array<f64, Ix2> {
-    let dim = basis_set.cgtos.len();
-    let mut mat: Array<f64, _> = Array::zeros((dim, dim));
-    for (mu, a) in basis_set.cgtos.iter().enumerate() {
-        for (nu, b) in basis_set.cgtos.iter().enumerate() {
-            for (lambda, c) in basis_set.cgtos.iter().enumerate() {
-                for (sigma, d) in basis_set.cgtos.iter().enumerate() {
-                    for (pa, ca) in a.primitives.iter().zip(&a.coefs) {
-                        for (pb, cb) in b.primitives.iter().zip(&b.coefs) {
-                            for (pc, cc) in c.primitives.iter().zip(&c.coefs) {
-                                for (pd, cd) in d.primitives.iter().zip(&d.coefs) {
-                                    mat[[mu, nu]] += ca
+                                    K[[mu, nu]] += ca
                                         * cb
                                         * cc
                                         * cd
@@ -407,5 +386,5 @@ pub fn K(basis_set: &Basis, D: &Array<f64, Ix2>) -> Array<f64, Ix2> {
             }
         }
     }
-    mat
+    (J, K)
 }
