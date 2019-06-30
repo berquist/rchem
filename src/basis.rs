@@ -235,14 +235,17 @@ fn overlap_cgto_left(a: &CGTO, b: &PGTO) -> f64 {
 pub fn S(basis_set: &Basis) -> Array<f64, Ix2> {
     let dim = basis_set.cgtos.len();
     let mut mat: Array<f64, _> = Array::zeros((dim, dim));
-    for (i, a) in basis_set.cgtos.iter().enumerate() {
-        for (j, b) in basis_set.cgtos.iter().enumerate() {
-            mat[[i, j]] = b
+    for mu in 0..dim {
+        let a = &basis_set.cgtos[mu];
+        for nu in 0..mu + 1 {
+            let b = &basis_set.cgtos[nu];
+            mat[[mu, nu]] = b
                 .primitives
                 .iter()
                 .zip(&b.coefs)
                 .map(|(pb, cb)| cb * overlap_cgto_left(&a, &pb))
                 .sum();
+            mat[[nu, mu]] = mat[[mu, nu]];
         }
     }
     mat
@@ -271,14 +274,17 @@ fn kinetic_cgto_left(a: &CGTO, b: &PGTO) -> f64 {
 pub fn T(basis_set: &Basis) -> Array<f64, Ix2> {
     let dim = basis_set.cgtos.len();
     let mut mat: Array<f64, _> = Array::zeros((dim, dim));
-    for (i, a) in basis_set.cgtos.iter().enumerate() {
-        for (j, b) in basis_set.cgtos.iter().enumerate() {
-            mat[[i, j]] = b
+    for mu in 0..dim {
+        let a = &basis_set.cgtos[mu];
+        for nu in 0..mu + 1 {
+            let b = &basis_set.cgtos[nu];
+            mat[[mu, nu]] = b
                 .primitives
                 .iter()
                 .zip(&b.coefs)
                 .map(|(pb, cb)| cb * kinetic_cgto_left(&a, &pb))
                 .sum();
+            mat[[nu, mu]] = mat[[mu, nu]];
         }
     }
     mat
@@ -314,15 +320,18 @@ pub fn V(basis_set: &Basis, atomcoords: &[[f64; 3]], atomnos: &Vec<u64>) -> Arra
     let mut mat: Array<f64, _> = Array::zeros((dim, dim, natoms));
     for (c, single_atomcoords) in atomcoords.iter().enumerate() {
         let atomno = atomnos[c] as f64;
-        for (i, a) in basis_set.cgtos.iter().enumerate() {
-            for (j, b) in basis_set.cgtos.iter().enumerate() {
+        for mu in 0..dim {
+            let a = &basis_set.cgtos[mu];
+            for nu in 0..mu + 1 {
+                let b = &basis_set.cgtos[nu];
                 let elem: f64 = b
                     .primitives
                     .iter()
                     .zip(&b.coefs)
                     .map(|(pb, cb)| cb * nuclear_cgto_left(&a, &pb, single_atomcoords))
                     .sum();
-                mat[[i, j, c]] = atomno * elem;
+                mat[[mu, nu, c]] = atomno * elem;
+                mat[[nu, mu, c]] = mat[[mu, nu, c]];
             }
         }
     }
