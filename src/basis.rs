@@ -371,17 +371,19 @@ pub fn JK_direct(basis_set: &Basis, D: &Array<f64, Ix2>) -> (Array<f64, Ix2>, Ar
         for (nu, b) in basis_set.cgtos.iter().enumerate() {
             for (lambda, c) in basis_set.cgtos.iter().enumerate() {
                 for (sigma, d) in basis_set.cgtos.iter().enumerate() {
+                    let mut j_contr = 0.0;
+                    let mut k_contr = 0.0;
                     for (pa, ca) in a.primitives.iter().zip(&a.coefs) {
                         for (pb, cb) in b.primitives.iter().zip(&b.coefs) {
                             for (pc, cc) in c.primitives.iter().zip(&c.coefs) {
                                 for (pd, cd) in d.primitives.iter().zip(&d.coefs) {
-                                    J[[mu, nu]] += ca
+                                    j_contr += ca
                                         * cb
                                         * cc
                                         * cd
                                         * coulomb_pgto(&pa, &pb, &pc, &pd)
                                         * D[[lambda, sigma]];
-                                    K[[mu, nu]] += ca
+                                    k_contr += ca
                                         * cb
                                         * cc
                                         * cd
@@ -391,6 +393,8 @@ pub fn JK_direct(basis_set: &Basis, D: &Array<f64, Ix2>) -> (Array<f64, Ix2>, Ar
                             }
                         }
                     }
+                    J[[mu, nu]] += j_contr;
+                    K[[mu, nu]] += k_contr;
                 }
             }
         }
@@ -401,20 +405,26 @@ pub fn JK_direct(basis_set: &Basis, D: &Array<f64, Ix2>) -> (Array<f64, Ix2>, Ar
 pub fn build_I(basis_set: &Basis) -> Array<f64, Ix4> {
     let dim = basis_set.cgtos.len();
     let mut I: Array<f64, _> = Array::zeros((dim, dim, dim, dim));
-    for (mu, a) in basis_set.cgtos.iter().enumerate() {
-        for (nu, b) in basis_set.cgtos.iter().enumerate() {
-            for (lambda, c) in basis_set.cgtos.iter().enumerate() {
-                for (sigma, d) in basis_set.cgtos.iter().enumerate() {
+    for mu in 0..dim {
+        let a = &basis_set.cgtos[mu];
+        for nu in 0..dim {
+            let b = &basis_set.cgtos[nu];
+            for lambda in 0..dim {
+                let c = &basis_set.cgtos[lambda];
+                for sigma in 0..dim {
+                    let d = &basis_set.cgtos[sigma];
+                    let mut val = 0.0;
                     for (pa, ca) in a.primitives.iter().zip(&a.coefs) {
                         for (pb, cb) in b.primitives.iter().zip(&b.coefs) {
                             for (pc, cc) in c.primitives.iter().zip(&c.coefs) {
                                 for (pd, cd) in d.primitives.iter().zip(&d.coefs) {
-                                    I[[mu, nu, lambda, sigma]] +=
+                                    val +=
                                         ca * cb * cc * cd * coulomb_pgto(&pa, &pb, &pc, &pd);
                                 }
                             }
                         }
                     }
+                    I[[mu, nu, lambda, sigma]] = val;
                 }
             }
         }
@@ -428,12 +438,16 @@ pub fn JK_inmem(I: &Array<f64, Ix4>, D: &Array<f64, Ix2>) -> (Array<f64, Ix2>, A
     let mut K: Array<f64, _> = Array::zeros((dim, dim));
     for mu in 0..dim {
         for nu in 0..dim {
+            let mut j_contr = 0.0;
+            let mut k_contr = 0.0;
             for lambda in 0..dim {
                 for sigma in 0..dim {
-                    J[[mu, nu]] += I[[mu, nu, lambda, sigma]] * D[[lambda, sigma]];
-                    K[[mu, nu]] += I[[mu, lambda, nu, sigma]] * D[[lambda, sigma]];
+                    j_contr += I[[mu, nu, lambda, sigma]] * D[[lambda, sigma]];
+                    k_contr += I[[mu, lambda, nu, sigma]] * D[[lambda, sigma]];
                 }
             }
+            J[[mu, nu]] = j_contr;
+            K[[mu, nu]] = k_contr;
         }
     }
     (J, K)
