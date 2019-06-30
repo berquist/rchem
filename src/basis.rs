@@ -367,10 +367,14 @@ pub fn JK_direct(basis_set: &Basis, D: &Array<f64, Ix2>) -> (Array<f64, Ix2>, Ar
     let dim = basis_set.cgtos.len();
     let mut J: Array<f64, _> = Array::zeros((dim, dim));
     let mut K: Array<f64, _> = Array::zeros((dim, dim));
-    for (mu, a) in basis_set.cgtos.iter().enumerate() {
-        for (nu, b) in basis_set.cgtos.iter().enumerate() {
-            for (lambda, c) in basis_set.cgtos.iter().enumerate() {
-                for (sigma, d) in basis_set.cgtos.iter().enumerate() {
+    for mu in 0..dim {
+        let a = &basis_set.cgtos[mu];
+        for nu in 0..dim {
+            let b = &basis_set.cgtos[nu];
+            for lambda in 0..dim {
+                let c = &basis_set.cgtos[lambda];
+                for sigma in 0..dim {
+                    let d = &basis_set.cgtos[sigma];
                     let mut j_contr = 0.0;
                     let mut k_contr = 0.0;
                     for (pa, ca) in a.primitives.iter().zip(&a.coefs) {
@@ -407,11 +411,11 @@ pub fn build_I(basis_set: &Basis) -> Array<f64, Ix4> {
     let mut I: Array<f64, _> = Array::zeros((dim, dim, dim, dim));
     for mu in 0..dim {
         let a = &basis_set.cgtos[mu];
-        for nu in 0..dim {
+        for nu in 0..mu + 1 {
             let b = &basis_set.cgtos[nu];
             for lambda in 0..dim {
                 let c = &basis_set.cgtos[lambda];
-                for sigma in 0..dim {
+                for sigma in 0..lambda + 1 {
                     let d = &basis_set.cgtos[sigma];
                     let mut val = 0.0;
                     for (pa, ca) in a.primitives.iter().zip(&a.coefs) {
@@ -425,6 +429,9 @@ pub fn build_I(basis_set: &Basis) -> Array<f64, Ix4> {
                         }
                     }
                     I[[mu, nu, lambda, sigma]] = val;
+                    I[[nu, mu, lambda, sigma]] = val;
+                    I[[mu, nu, sigma, lambda]] = val;
+                    I[[nu, mu, sigma, lambda]] = val;
                 }
             }
         }
@@ -437,7 +444,7 @@ pub fn JK_inmem(I: &Array<f64, Ix4>, D: &Array<f64, Ix2>) -> (Array<f64, Ix2>, A
     let mut J: Array<f64, _> = Array::zeros((dim, dim));
     let mut K: Array<f64, _> = Array::zeros((dim, dim));
     for mu in 0..dim {
-        for nu in 0..dim {
+        for nu in 0..mu + 1 {
             let mut j_contr = 0.0;
             let mut k_contr = 0.0;
             for lambda in 0..dim {
@@ -448,6 +455,9 @@ pub fn JK_inmem(I: &Array<f64, Ix4>, D: &Array<f64, Ix2>) -> (Array<f64, Ix2>, A
             }
             J[[mu, nu]] = j_contr;
             K[[mu, nu]] = k_contr;
+            // TODO can't do J += J.t()?
+            J[[nu, mu]] = j_contr;
+            K[[nu, mu]] = k_contr;
         }
     }
     (J, K)
