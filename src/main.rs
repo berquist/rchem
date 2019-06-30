@@ -67,7 +67,7 @@ fn main() {
     let mut iteration = 0;
 
     while iteration < max_iterations {
-        let F = build_fock_inmem(&D, &H, &I);
+        let F = build_fock(&D, &H, &basis_set);
         let F_prime = symm_orthog.t().dot(&F).dot(&symm_orthog);
         let (eps_vec, C_prime) = F_prime.eigh(UPLO::Upper).unwrap();
         let C = symm_orthog.dot(&C_prime);
