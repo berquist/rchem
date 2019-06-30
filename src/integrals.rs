@@ -5,6 +5,8 @@ extern crate rgsl;
 
 use smallvec::SmallVec;
 
+use boys::micb25::boys;
+
 fn remove_item<T: PartialEq>(v: &mut Vec<T>, item: &T) {
     v.iter().position(|x| x == item).map(|x| v.remove(x));
 }
@@ -260,22 +262,6 @@ fn get_bi_center(z1: f64, z2: f64, r1: &[f64; 3], r2: &[f64; 3]) -> [f64; 3] {
     let ry = (z1 * r1[1] + z2 * r2[1]) / z;
     let rz = (z1 * r1[2] + z2 * r2[2]) / z;
     [rx, ry, rz]
-}
-
-fn boys(n: u64, x: f64) -> f64 {
-    let n = n as f64;
-    if x > 0.0 {
-        let f = 2.0 * x.powf(n + 0.5);
-        let g = rgsl::gamma_beta::gamma::gamma(n + 0.5);
-        // need the "upper" incomplete gamma function, integrate from x to infty
-        // regularized -> divide by gamma function
-        let gi = rgsl::gamma_beta::incomplete_gamma::gamma_inc_P_e(n + 0.5, x)
-            .1
-            .val;
-        return g * gi / f;
-    } else {
-        return 1.0 / (n * 2.0 + 1.0);
-    }
 }
 
 fn get_r12_squared(r1: &[f64; 3], r2: &[f64; 3]) -> f64 {
@@ -836,7 +822,6 @@ fn get_moment(
 
 #[cfg(test)]
 mod tests {
-    use super::boys;
     use super::find_component_to_lower;
     use super::find_fun_to_lower;
     use super::get_coulomb;
@@ -1021,12 +1006,5 @@ mod tests {
 
         let integral = get_moment(za, zb, &ra, &rb, &rc, &[0, 0, 2, 0, 0, 0], &[0, 0, 1]);
         assert!((integral - -0.01330515491323708).abs() < thresh);
-    }
-
-    #[test]
-    fn test_boys() {
-        let thresh = 1.0e-16;
-
-        assert!(boys(2, 2.0) - 0.0529428148329765 < thresh);
     }
 }

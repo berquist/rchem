@@ -60,6 +60,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "boys"
+version = "0.1.0"
+source = "git+https://github.com/berquist/boys#3fc8470026d3fe1c9eb10e8103ca9d0d799951b3"
+dependencies = [
+ "GSL 1.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
 name = "bstr"
 version = "0.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -533,6 +541,7 @@ name = "rchem"
 version = "0.1.0"
 dependencies = [
  "GSL 1.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "boys 0.1.0 (git+https://github.com/berquist/boys)",
  "chemfiles 0.9.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "cpython 0.2.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "criterion 0.2.11 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -760,6 +769,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 "checksum bitflags 1.1.0 (registry+https://github.com/rust-lang/crates.io-index)" = "3d155346769a6855b86399e9bc3814ab343cd3d62c7e985113d46a0ec3c281fd"
 "checksum blas-src 0.2.1 (registry+https://github.com/rust-lang/crates.io-index)" = "a7b894d1cc14af76750a80f64387f7986fe93a9d3786a9a8926a340ae50b2c51"
 "checksum blas-src 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)" = "46fff4479d0099bbf7d7a093d095aea3cce49986642f3c9cb27375fed6b1b433"
+"checksum boys 0.1.0 (git+https://github.com/berquist/boys)" = "<none>"
 "checksum bstr 0.2.1 (registry+https://github.com/rust-lang/crates.io-index)" = "6cc0572e02f76cb335f309b19e0a0d585b4f62788f7d26de2a13a836a637385f"
 "checksum byteorder 1.3.2 (registry+https://github.com/rust-lang/crates.io-index)" = "a7c3dd8985a7111efc5c80b44e23ecdd8c007de8ade3b96595387e812b957cf5"
 "checksum c_vec 1.0.12 (registry+https://github.com/rust-lang/crates.io-index)" = "aa9e1d9f7d49e289f36f19effbf3d5a5e30163ecf9c7a3c9be94d5374dec5b9a"
