@@ -6,9 +6,7 @@ use chemfiles;
 use ndarray::{Array, Axis, Ix1, Ix2, Ix4, Slice};
 use ndarray_linalg::*;
 
-mod basis;
-mod integrals;
-mod shell;
+use rchem::{basis, integrals, shell};
 
 fn main() {
     // http://www.patorjk.com/software/taag/#p=display&f=3D%20Diagonal&t=rchem
