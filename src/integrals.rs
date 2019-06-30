@@ -3,6 +3,8 @@ use std::f64::consts::PI;
 
 extern crate rgsl;
 
+use smallvec::SmallVec;
+
 fn remove_item<T: PartialEq>(v: &mut Vec<T>, item: &T) {
     v.iter().position(|x| x == item).map(|x| v.remove(x));
 }
@@ -65,30 +67,23 @@ fn apply_os4(x: X4) -> Vec<X4> {
         _ => unreachable!(),
     };
 
-    let mut bra: Vec<usize> = vec![0, 1];
-    let mut ket: Vec<usize> = vec![2, 3];
+    let mut bra: SmallVec<[usize; 2]> = smallvec![0, 1];
+    let mut ket: SmallVec<[usize; 2]> = smallvec![2, 3];
 
-    let mut pre = vec![i1, i2];
-    if bra.contains(&fun) {
-        pre.push(18);
-        pre.push(20);
-        pre.push(18);
-        pre.push(20);
+    let pre = if bra.contains(&fun) {
+        [i1, i2, 18, 20, 18, 20, 22, 22]
     } else {
-        pre.push(19);
-        pre.push(21);
-        pre.push(19);
-        pre.push(21);
-    }
-    pre.push(22);
-    pre.push(22);
+        [i1, i2, 19, 21, 19, 21, 22, 22]
+    };
 
     let a = fun;
     let (b, c, d) = if bra.contains(&a) {
-        remove_item(&mut bra, &a);
+        // remove_item(&mut bra, &a);
+        bra.iter().position(|&x| x == a).map(|x| bra.remove(x));
         (bra.pop().unwrap(), ket.pop().unwrap(), ket.pop().unwrap())
     } else {
-        remove_item(&mut ket, &a);
+        // remove_item(&mut ket, &a);
+        ket.iter().position(|&x| x == a).map(|x| ket.remove(x));
         (ket.pop().unwrap(), bra.pop().unwrap(), bra.pop().unwrap())
     };
 
@@ -112,7 +107,7 @@ fn apply_os4(x: X4) -> Vec<X4> {
     x_copy[6].q[c * 3 + component] -= 1;
     x_copy[7].q[d * 3 + component] -= 1;
 
-    let n = vec![
+    let n = [
         1,
         1,
         x.q[a * 3 + component] - 1,
@@ -136,7 +131,7 @@ fn apply_os4(x: X4) -> Vec<X4> {
         }
     }
 
-    return x_list
+    x_list
         .iter()
         .flat_map(|x4| {
             if x4.q.iter().all(|&order| order == 0) {
@@ -145,7 +140,7 @@ fn apply_os4(x: X4) -> Vec<X4> {
                 apply_os4(x4.clone())
             }
         })
-        .collect();
+        .collect()
 }
 
 fn get_k(z1: f64, z2: f64, r1: &[f64; 3], r2: &[f64; 3]) -> f64 {
@@ -156,7 +151,7 @@ fn get_k(z1: f64, z2: f64, r1: &[f64; 3], r2: &[f64; 3]) -> f64 {
     } else {
         1.0
     };
-    return (2.0_f64).sqrt() * f2 * PI.powf(5.0 / 4.0) / f0;
+    (2.0_f64).sqrt() * f2 * PI.powf(5.0 / 4.0) / f0
 }
 
 fn get_aux(
@@ -171,7 +166,7 @@ fn get_aux(
 ) -> f64 {
     let k1 = get_k(za, zb, ra, rb);
     let k2 = get_k(zc, zd, rc, rd);
-    return k1 * k2 / (za + zb + zc + zd).sqrt();
+    k1 * k2 / (za + zb + zc + zd).sqrt()
 }
 
 pub fn get_coulomb(
@@ -194,7 +189,7 @@ pub fn get_coulomb(
     let t = rho * get_r12_squared(&rp, &rq);
     let s = get_aux(za, zb, zc, zd, ra, rb, rc, rd);
 
-    let prefac = vec![
+    let prefac = [
         rp[0] - ra[0],
         rp[0] - rb[0],
         rq[0] - rc[0],
@@ -256,7 +251,7 @@ pub fn get_coulomb(
             }
         }
     }
-    return integral;
+    integral
 }
 
 fn get_bi_center(z1: f64, z2: f64, r1: &[f64; 3], r2: &[f64; 3]) -> [f64; 3] {
@@ -264,7 +259,7 @@ fn get_bi_center(z1: f64, z2: f64, r1: &[f64; 3], r2: &[f64; 3]) -> [f64; 3] {
     let rx = (z1 * r1[0] + z2 * r2[0]) / z;
     let ry = (z1 * r1[1] + z2 * r2[1]) / z;
     let rz = (z1 * r1[2] + z2 * r2[2]) / z;
-    return [rx, ry, rz];
+    [rx, ry, rz]
 }
 
 fn boys(n: u64, x: f64) -> f64 {
@@ -284,12 +279,12 @@ fn boys(n: u64, x: f64) -> f64 {
 }
 
 fn get_r12_squared(r1: &[f64; 3], r2: &[f64; 3]) -> f64 {
-    return (r1[0] - r2[0]).powi(2) + (r1[1] - r2[1]).powi(2) + (r1[2] - r2[2]).powi(2);
+    (r1[0] - r2[0]).powi(2) + (r1[1] - r2[1]).powi(2) + (r1[2] - r2[2]).powi(2)
 }
 
 fn find_fun_to_lower(q: &Vec<i8>, n: usize) -> Result<usize, bool> {
     // Determine the total angular momentum on each center.
-    let mut l = vec![];
+    let mut l: SmallVec<[i8; 12]> = smallvec![];
     for i in 0..n {
         l.push(q[i * 3] + q[i * 3 + 1] + q[i * 3 + 2])
     }
@@ -381,7 +376,7 @@ fn apply_os2(mut x: X2, kind: X2kind) -> Vec<X2> {
         _ => unreachable!(),
     };
 
-    let mut pre = vec![i1];
+    let mut pre: SmallVec<[u8; 12]> = smallvec![i1];
 
     if kind == X2kind::S {
         // The vrr for overlap integrals consists of three "terms".
@@ -429,8 +424,9 @@ fn apply_os2(mut x: X2, kind: X2kind) -> Vec<X2> {
     let (a, b) = match fun {
         2 => (2, 2),
         _ => {
-            let mut l: Vec<usize> = vec![0, 1];
-            remove_item(&mut l, &fun);
+            let mut l: SmallVec<[usize; 2]> = smallvec![0, 1];
+            // remove_item(&mut l, &fun);
+            l.iter().position(|&x| x == fun).map(|x| l.remove(x));
             (fun, l[0])
         }
     };
@@ -625,7 +621,7 @@ fn apply_os2(mut x: X2, kind: X2kind) -> Vec<X2> {
 
     // If we've hit the base case where all the components are zero,
     // terminate, otherwise recurse through each term.
-    return x_list
+    x_list
         .iter()
         .flat_map(|x2| {
             if x2.orders().iter().all(|&order| order == 0) {
@@ -634,7 +630,7 @@ fn apply_os2(mut x: X2, kind: X2kind) -> Vec<X2> {
                 apply_os2(x2.clone(), x2.kind.clone())
             }
         })
-        .collect();
+        .collect()
 }
 
 pub fn get_overlap(za: f64, zb: f64, ra: &[f64; 3], rb: &[f64; 3], c: &[usize; 6]) -> f64 {
@@ -644,7 +640,7 @@ pub fn get_overlap(za: f64, zb: f64, ra: &[f64; 3], rb: &[f64; 3], c: &[usize; 6
     let ab = get_r12_squared(ra, rb);
     let aux = (-e * ab).exp() * (PI / z).powf(1.5);
 
-    let prefac = vec![
+    let prefac = [
         rp[0] - ra[0],
         rp[0] - rb[0],
         rp[1] - ra[1],
@@ -677,7 +673,7 @@ pub fn get_overlap(za: f64, zb: f64, ra: &[f64; 3], rb: &[f64; 3], c: &[usize; 6
         }
         integral += f.scale * aux * g;
     }
-    return integral;
+    integral
 }
 
 pub fn get_kinetic(za: f64, zb: f64, ra: &[f64; 3], rb: &[f64; 3], c: &[usize; 6]) -> f64 {
@@ -687,7 +683,7 @@ pub fn get_kinetic(za: f64, zb: f64, ra: &[f64; 3], rb: &[f64; 3], c: &[usize; 6
     let ab = get_r12_squared(ra, rb);
     let aux = (-e * ab).exp() * (PI / z).powf(1.5);
 
-    let prefac = vec![
+    let prefac = [
         rp[0] - ra[0],
         rp[0] - rb[0],
         rp[1] - ra[1],
@@ -727,7 +723,7 @@ pub fn get_kinetic(za: f64, zb: f64, ra: &[f64; 3], rb: &[f64; 3], c: &[usize; 6
         }
         integral += f.scale * aux * g;
     }
-    return integral;
+    integral
 }
 
 pub fn get_nuclear(
@@ -744,7 +740,7 @@ pub fn get_nuclear(
     let u = z * pc;
     let aux = -2.0 * (z / PI).powf(0.5) * get_overlap(za, zb, ra, rb, &[0, 0, 0, 0, 0, 0]);
 
-    let prefac = vec![
+    let prefac = [
         rp[0] - ra[0],
         rp[0] - rb[0],
         rp[1] - ra[1],
@@ -780,7 +776,7 @@ pub fn get_nuclear(
         }
         integral += f.scale * aux * g * boys(f.order.into(), u);
     }
-    return integral;
+    integral
 }
 
 fn get_moment(
@@ -796,7 +792,7 @@ fn get_moment(
     let rp = get_bi_center(za, zb, ra, rb);
     let aux = get_overlap(za, zb, ra, rb, &[0, 0, 0, 0, 0, 0]);
 
-    let prefac = vec![
+    let prefac = [
         rp[0] - ra[0],
         rp[0] - rb[0],
         rp[1] - ra[1],
@@ -835,7 +831,7 @@ fn get_moment(
         }
         integral += f.scale * aux * g;
     }
-    return integral;
+    integral
 }
 
 #[cfg(test)]

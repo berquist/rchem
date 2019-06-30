@@ -5,6 +5,7 @@ authors = ["Eric Berquist <eric.berquist@gmail.com>"]
 edition = "2018"
 
 [dependencies]
+smallvec = "0.6"
 GSL = "1.1.0"
 cpython = "0.2"
 serde = { version = "1.0", features = [ "derive" ] }
