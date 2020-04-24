@@ -3,8 +3,13 @@ name = "rchem"
 version = "0.1.0"
 authors = ["Eric Berquist <eric.berquist@gmail.com>"]
 edition = "2018"
+build = "build.rs"
 
 [dependencies]
+approx = "0.3"
+factorial = { version = "0.2", path = "/home/eric/development/forks/rust/factorial" }
+num-integer = "0.1"
+# num-traits = "*"
 arrayvec = "0.4"
 GSL = "1.1"
 cpython = "0.2"
@@ -14,6 +19,10 @@ chemfiles = "0.9"
 ndarray = "0.12"
 ndarray-linalg = { version = "0.11", features = [ "netlib" ] }
 boys = { version = "0.1", git = "https://github.com/berquist/boys" }
+
+[build-dependencies]
+# bindgen = "0.53"
+cmake = "0.1"
 
 [dev-dependencies]
 criterion = "0.2"
