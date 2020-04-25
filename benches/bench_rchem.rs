@@ -3,8 +3,6 @@ extern crate criterion;
 
 use criterion::Criterion;
 
-use rchem;
-
 fn criterion_benchmark(c: &mut Criterion) {
     let za = 1.8;
     let zb = 2.8;

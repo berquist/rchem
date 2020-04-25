@@ -9,5 +9,4 @@ extern crate approx;
 
 pub mod basis;
 pub mod integrals;
-pub mod pyquante;
 pub mod shell;
