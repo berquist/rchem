@@ -13,8 +13,23 @@ fn main() {
         .header("libpyquante2/cints.h")
         .parse_callbacks(Box::new(bindgen::CargoCallbacks))
         .generate()
-        .expect("Unable to generate bindings");
+        .expect("Unable to generate libpyquante2 bindings");
     bindings_libpyquante2
         .write_to_file(out_dir.join("bindings_libpyquante2.rs"))
-        .expect("Couldn't write bindings!");
+        .expect("Couldn't write libpyquante2 bindings!");
+
+    let simint_base = "/home/eric/data/opt/apps/simint/0.7-g9.3.0-avxfma";
+    println!("cargo:rustc-link-search={}/lib", simint_base);
+    println!("cargo:rustc-link-lib=static=simint");
+    let bindings_simint = bindgen::Builder::default()
+        .header(format!("{}/include/simint/simint.h", simint_base))
+        .whitelist_var("SIMINT_.*")
+        .whitelist_function("simint_.*")
+        .whitelist_type("simint_.*")
+        .parse_callbacks(Box::new(bindgen::CargoCallbacks))
+        .generate()
+        .expect("Unable to generate simint bindings");
+    bindings_simint
+        .write_to_file(out_dir.join("bindings_simint.rs"))
+        .expect("Couldn't write simint bindings!");
 }

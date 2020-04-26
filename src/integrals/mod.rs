@@ -1,3 +1,4 @@
+pub mod simint;
 pub mod os86;
 pub mod tho66;
 
