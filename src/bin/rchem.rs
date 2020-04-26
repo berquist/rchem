@@ -2,8 +2,7 @@
 
 use std::f64;
 
-use chemfiles;
-use ndarray::{Array, Axis, Ix1, Ix2, Ix4, Slice};
+use ndarray::{Array, Axis, Ix1, Ix2, Slice};
 use ndarray_linalg::*;
 
 use rchem::basis;
@@ -34,9 +33,9 @@ fn main() {
     let atomcoords = frame.positions();
     let atomnos: Vec<_> = (0..natom).map(|i| frame.atom(i).atomic_number()).collect();
     let basis_set = basis::Basis::new(&atomnos, &atomcoords, "STO-2G");
-    println!("{:#?}", basis_set);
+    // println!("{:#?}", basis_set);
 
-    let I = basis::build_I(&basis_set);
+    // let I = basis::build_I(&basis_set);
 
     let S = basis::S(&basis_set);
 
@@ -111,11 +110,11 @@ fn build_fock(
     (2.0 * J - K) + H
 }
 
-fn build_fock_inmem(
-    D: &Array<f64, Ix2>,
-    H: &Array<f64, Ix2>,
-    I: &Array<f64, Ix4>,
-) -> Array<f64, Ix2> {
-    let (J, K) = basis::JK_inmem(&I, &D);
-    (2.0 * J - K) + H
-}
+// fn build_fock_inmem(
+//     D: &Array<f64, Ix2>,
+//     H: &Array<f64, Ix2>,
+//     I: &Array<f64, Ix4>,
+// ) -> Array<f64, Ix2> {
+//     let (J, K) = basis::JK_inmem(&I, &D);
+//     (2.0 * J - K) + H
+// }

@@ -7,7 +7,6 @@ use std::f64::consts::PI;
 use cpython::{PyDict, Python};
 use ndarray::{Array, Axis, Ix2, Ix4};
 use serde::{Deserialize, Deserializer};
-use serde_json;
 
 use crate::integrals;
 use crate::shell;
@@ -339,28 +338,46 @@ pub fn V(basis_set: &Basis, atomcoords: &[[f64; 3]], atomnos: &Vec<u64>) -> Arra
 }
 
 fn coulomb_pgto(a: &PGTO, b: &PGTO, c: &PGTO, d: &PGTO) -> f64 {
+    // let powers = [
+    //     a.powers[0],
+    //     a.powers[1],
+    //     a.powers[2],
+    //     b.powers[0],
+    //     b.powers[1],
+    //     b.powers[2],
+    //     c.powers[0],
+    //     c.powers[1],
+    //     c.powers[2],
+    //     d.powers[0],
+    //     d.powers[1],
+    //     d.powers[2],
+    // ];
     let powers = [
-        a.powers[0],
-        a.powers[1],
-        a.powers[2],
-        b.powers[0],
-        b.powers[1],
-        b.powers[2],
-        c.powers[0],
-        c.powers[1],
-        c.powers[2],
-        d.powers[0],
-        d.powers[1],
-        d.powers[2],
+        a.powers[0] as i32,
+        a.powers[1] as i32,
+        a.powers[2] as i32,
+        b.powers[0] as i32,
+        b.powers[1] as i32,
+        b.powers[2] as i32,
+        c.powers[0] as i32,
+        c.powers[1] as i32,
+        c.powers[2] as i32,
+        d.powers[0] as i32,
+        d.powers[1] as i32,
+        d.powers[2] as i32,
     ];
-    a.norm
-        * b.norm
-        * c.norm
-        * d.norm
-        * integrals::get_coulomb(
-            a.exponent, b.exponent, c.exponent, d.exponent, &a.origin, &b.origin, &c.origin,
-            &d.origin, &powers,
-        )
+    integrals::tho66::pyquante2::pyquante2_coulomb_repulsion(
+        a.exponent, b.exponent, c.exponent, d.exponent, &a.origin, &b.origin, &c.origin, &d.origin,
+        a.norm, b.norm, c.norm, d.norm, &powers,
+    )
+    // a.norm
+    //     * b.norm
+    //     * c.norm
+    //     * d.norm
+    // * integrals::get_coulomb(
+    //     a.exponent, b.exponent, c.exponent, d.exponent, &a.origin, &b.origin, &c.origin,
+    //     &d.origin, &powers,
+    // )
 }
 
 pub fn JK_direct(basis_set: &Basis, D: &Array<f64, Ix2>) -> (Array<f64, Ix2>, Array<f64, Ix2>) {
