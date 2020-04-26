@@ -422,8 +422,7 @@ pub fn build_I(basis_set: &Basis) -> Array<f64, Ix4> {
                         for (pb, cb) in b.primitives.iter().zip(&b.coefs) {
                             for (pc, cc) in c.primitives.iter().zip(&c.coefs) {
                                 for (pd, cd) in d.primitives.iter().zip(&d.coefs) {
-                                    val +=
-                                        ca * cb * cc * cd * coulomb_pgto(&pa, &pb, &pc, &pd);
+                                    val += ca * cb * cc * cd * coulomb_pgto(&pa, &pb, &pc, &pd);
                                 }
                             }
                         }
