@@ -1,9 +1,9 @@
 #![allow(clippy::too_many_arguments)]
 #![allow(clippy::many_single_char_names)]
-use factorial::SignedFactorial;
-use num_integer;
-use std::convert::TryInto;
-use std::f64;
+// use factorial::SignedFactorial;
+// use num_integer;
+// use std::convert::TryInto;
+// use std::f64;
 
 // fn fact_ratio2(a: i64, b: i64) -> i64 {
 //     a.factorial() / b.factorial() / (a - 2 * b).factorial()
