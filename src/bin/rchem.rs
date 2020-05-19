@@ -7,6 +7,7 @@ use ndarray_linalg::*;
 
 use rchem::basis;
 
+/// The main driver. Currently just an example of computing the HF/STO-2G energy of a water molecule.
 fn main() {
     // http://www.patorjk.com/software/taag/#p=display&f=3D%20Diagonal&t=rchem
     let logo = r#"

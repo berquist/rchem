@@ -1,3 +1,5 @@
+//! Two-electron integrals based on the Obara--Saika algorith, provided by [Simint](http://www.bennyp.org/research/simint/).
+
 #![allow(clippy::unreadable_literal)]
 #![allow(dead_code)]
 #![allow(non_snake_case)]
@@ -271,6 +273,7 @@ mod tests {
     use super::*;
 
     #[test]
+    /// A reimplementation of [simint/examples/example1.c](https://github.com/simint-chem/simint-generator/blob/c589bd70e53bbdde1753df093bea6db2eb63c971/skel/examples/example1.c)
     fn example1() {
         let s_shells = vec![
             SimintShell {

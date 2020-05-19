@@ -1,5 +1,15 @@
-#![allow(clippy::too_many_arguments)]
-#![allow(clippy::many_single_char_names)]
+//! One- and two-electron integrals based on the Taketa--Huzinaga--O-ohata (THO) algorithm.
+//!
+//! Currently available integral types are:
+//! - Two-center one-electron overlap (S)
+//! - Four-center two-electron repulsion (ERI)
+//!
+//! Reference: [Taketa, Hiroshi; Huzinaga, Sigeru; O-ohata, Kiyosi. Gaussian-Expansion Methods for Molecular Integrals. _J. Phys. Soc. Jpn._ **1966**, _21_, 2313-2324.](https://doi.org/10.1143/JPSJ.21.2313)
+//!
+//! Most of this file is commented out because there is an issue with the pure Rust implementation. The implementation used originates from bindings to the pure C implementation taken from [pyquante2](https://github.com/rpmuller/pyquante2/tree/6e34cb4480ae7dbd8c5e44d221d8b27584890c83/cython), stored in [the crate root](https://github.com/berquist/rchem/tree/276a5d44505ac8b817219426e3eced96d2555950/libpyquante2).
+
+// #![allow(clippy::too_many_arguments)]
+// #![allow(clippy::many_single_char_names)]
 // use factorial::SignedFactorial;
 // use num_integer;
 // use std::convert::TryInto;

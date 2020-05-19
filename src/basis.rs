@@ -1,3 +1,5 @@
+//! Representation of a basis set from the [Basis Set Exchange](https://github.com/MolSSI-BSE/basis_set_exchange) and functions for returning matrices of molecular integrals.
+
 #![allow(non_snake_case)]
 
 use std::collections::HashMap as Map;
@@ -172,6 +174,7 @@ impl CGTO {
     }
 }
 
+/// A representation of a basis set suitable for computing molecular integrals over.
 #[derive(Debug)]
 pub struct Basis {
     name: String,
@@ -233,6 +236,7 @@ fn overlap_cgto_left(a: &CGTO, b: &PGTO) -> f64 {
         .sum()
 }
 
+/// Construct the overlap matrix over a contracted basis.
 pub fn S(basis_set: &Basis) -> Array<f64, Ix2> {
     let dim = basis_set.cgtos.len();
     let mut mat: Array<f64, _> = Array::zeros((dim, dim));
@@ -274,6 +278,7 @@ fn kinetic_cgto_left(a: &CGTO, b: &PGTO) -> f64 {
         .sum()
 }
 
+/// Construct the kinetic energy matrix over a contracted basis.
 pub fn T(basis_set: &Basis) -> Array<f64, Ix2> {
     let dim = basis_set.cgtos.len();
     let mut mat: Array<f64, _> = Array::zeros((dim, dim));
@@ -317,6 +322,7 @@ fn nuclear_cgto_left(a: &CGTO, b: &PGTO, atomcoords: &[f64; 3]) -> f64 {
         .sum()
 }
 
+/// Construct the nuclear-electron attraction matrix over a contracted basis.
 pub fn V(basis_set: &Basis, atomcoords: &[[f64; 3]], atomnos: &Vec<u64>) -> Array<f64, Ix2> {
     let dim = basis_set.cgtos.len();
     let natoms = atomcoords.len();
@@ -428,6 +434,7 @@ pub fn JK_direct(basis_set: &Basis, D: &Array<f64, Ix2>) -> (Array<f64, Ix2>, Ar
     (J, K)
 }
 
+/// Build an explicit rank-4 tensor of all electron repulsion integrals.
 pub fn build_I(basis_set: &Basis) -> Array<f64, Ix4> {
     let dim = basis_set.cgtos.len();
     let mut I: Array<f64, _> = Array::zeros((dim, dim, dim, dim));
@@ -460,6 +467,7 @@ pub fn build_I(basis_set: &Basis) -> Array<f64, Ix4> {
     I
 }
 
+/// Build the Coulomb and exchange matrices from precomputed electron repulsion integrals.
 pub fn JK_inmem(I: &Array<f64, Ix4>, D: &Array<f64, Ix2>) -> (Array<f64, Ix2>, Array<f64, Ix2>) {
     let dim = I.shape()[0];
     let mut J: Array<f64, _> = Array::zeros((dim, dim));
