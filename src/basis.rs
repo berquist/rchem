@@ -370,7 +370,7 @@ fn coulomb_pgto(a: &PGTO, b: &PGTO, c: &PGTO, d: &PGTO) -> f64 {
         d.powers[1] as i32,
         d.powers[2] as i32,
     ];
-    integrals::tho66::pyquante2::pyquante2_coulomb_repulsion(
+    integrals::tho66::pyquante2::coulomb_repulsion(
         a.exponent, b.exponent, c.exponent, d.exponent, &a.origin, &b.origin, &c.origin, &d.origin,
         a.norm, b.norm, c.norm, d.norm, &powers,
     )
