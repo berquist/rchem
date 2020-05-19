@@ -220,7 +220,9 @@ fn overlap_pgto(a: &PGTO, b: &PGTO) -> f64 {
         b.powers[1],
         b.powers[2],
     ];
-    a.norm * b.norm * integrals::get_overlap(a.exponent, b.exponent, &a.origin, &b.origin, &powers)
+    a.norm
+        * b.norm
+        * integrals::os86::get_overlap(a.exponent, b.exponent, &a.origin, &b.origin, &powers)
 }
 
 fn overlap_cgto_left(a: &CGTO, b: &PGTO) -> f64 {
@@ -259,7 +261,9 @@ fn kinetic_pgto(a: &PGTO, b: &PGTO) -> f64 {
         b.powers[1],
         b.powers[2],
     ];
-    a.norm * b.norm * integrals::get_kinetic(a.exponent, b.exponent, &a.origin, &b.origin, &powers)
+    a.norm
+        * b.norm
+        * integrals::os86::get_kinetic(a.exponent, b.exponent, &a.origin, &b.origin, &powers)
 }
 
 fn kinetic_cgto_left(a: &CGTO, b: &PGTO) -> f64 {
@@ -300,7 +304,7 @@ fn nuclear_pgto(a: &PGTO, b: &PGTO, atomcoords: &[f64; 3]) -> f64 {
     ];
     a.norm
         * b.norm
-        * integrals::get_nuclear(
+        * integrals::os86::get_nuclear(
             a.exponent, b.exponent, &a.origin, &b.origin, atomcoords, &powers,
         )
 }
@@ -374,12 +378,13 @@ fn coulomb_pgto(a: &PGTO, b: &PGTO, c: &PGTO, d: &PGTO) -> f64 {
     //     * b.norm
     //     * c.norm
     //     * d.norm
-    // * integrals::get_coulomb(
+    // * integrals::os86::get_coulomb(
     //     a.exponent, b.exponent, c.exponent, d.exponent, &a.origin, &b.origin, &c.origin,
     //     &d.origin, &powers,
     // )
 }
 
+/// Build the Coulomb and exchange matrices on the fly (integral direct).
 pub fn JK_direct(basis_set: &Basis, D: &Array<f64, Ix2>) -> (Array<f64, Ix2>, Array<f64, Ix2>) {
     let dim = basis_set.cgtos.len();
     let mut J: Array<f64, _> = Array::zeros((dim, dim));
