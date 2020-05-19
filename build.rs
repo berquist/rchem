@@ -26,6 +26,9 @@ fn main() {
         .whitelist_var("SIMINT_.*")
         .whitelist_function("simint_.*")
         .whitelist_type("simint_.*")
+        // Wanted for the inlines in ostei/ostei_config.h, but doesn't work.
+        // .generate_inline_functions(true)
+        // .clang_arg("-fkeep-inline-functions")
         .parse_callbacks(Box::new(bindgen::CargoCallbacks))
         .generate()
         .expect("Unable to generate simint bindings");
