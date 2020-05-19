@@ -10,20 +10,17 @@ fn criterion_benchmark(c: &mut Criterion) {
     let rb = [0.5, 0.8, -0.2];
 
     let powers = [0, 0, 0, 0, 0, 0];
-    c.bench_function(
-        "tho66::pyquante2::pyquante2_overlap_0_0_0_0_0_0",
-        move |b| {
-            b.iter(|| {
-                rchem::integrals::tho66::pyquante2::pyquante2_overlap(
-                    za,
-                    zb,
-                    &ra,
-                    &rb,
-                    &[0, 0, 0, 0, 0, 0], // TODO
-                )
-            })
-        },
-    );
+    c.bench_function("tho66::pyquante2::overlap_0_0_0_0_0_0", move |b| {
+        b.iter(|| {
+            rchem::integrals::tho66::pyquante2::overlap(
+                za,
+                zb,
+                &ra,
+                &rb,
+                &[0, 0, 0, 0, 0, 0], // TODO
+            )
+        })
+    });
     c.bench_function("os86::get_overlap_0_0_0_0_0_0", move |b| {
         b.iter(|| rchem::integrals::os86::get_overlap(za, zb, &ra, &rb, &powers))
     });
@@ -40,20 +37,17 @@ fn criterion_benchmark(c: &mut Criterion) {
         b.iter(|| rchem::integrals::os86::get_overlap(za, zb, &ra, &rb, &powers))
     });
     let powers = [2, 2, 2, 2, 2, 2];
-    c.bench_function(
-        "tho66::pyquante2::pyquante2_overlap_2_2_2_2_2_2",
-        move |b| {
-            b.iter(|| {
-                rchem::integrals::tho66::pyquante2::pyquante2_overlap(
-                    za,
-                    zb,
-                    &ra,
-                    &rb,
-                    &[2, 2, 2, 2, 2, 2], // TODO
-                )
-            })
-        },
-    );
+    c.bench_function("tho66::pyquante2::overlap_2_2_2_2_2_2", move |b| {
+        b.iter(|| {
+            rchem::integrals::tho66::pyquante2::overlap(
+                za,
+                zb,
+                &ra,
+                &rb,
+                &[2, 2, 2, 2, 2, 2], // TODO
+            )
+        })
+    });
     c.bench_function("os86::get_overlap_2_2_2_2_2_2", move |b| {
         b.iter(|| rchem::integrals::os86::get_overlap(za, zb, &ra, &rb, &powers))
     });
@@ -114,10 +108,10 @@ fn criterion_benchmark(c: &mut Criterion) {
 
     let powers: [usize; 12] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
     c.bench_function(
-        "tho66::pyquante2::pyquante2_coulomb_repulsion_0_0_0_0_0_0_0_0_0_0_0_0",
+        "tho66::pyquante2::coulomb_repulsion_0_0_0_0_0_0_0_0_0_0_0_0",
         move |b| {
             b.iter(|| {
-                rchem::integrals::tho66::pyquante2::pyquante2_coulomb_repulsion(
+                rchem::integrals::tho66::pyquante2::coulomb_repulsion(
                     za,
                     zb,
                     zc,
@@ -140,10 +134,10 @@ fn criterion_benchmark(c: &mut Criterion) {
     });
     let powers = [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
     c.bench_function(
-        "tho66::pyquante2::pyquante2_coulomb_repulsion_1_0_0_0_0_0_0_0_0_0_0_0",
+        "tho66::pyquante2::coulomb_repulsion_1_0_0_0_0_0_0_0_0_0_0_0",
         move |b| {
             b.iter(|| {
-                rchem::integrals::tho66::pyquante2::pyquante2_coulomb_repulsion(
+                rchem::integrals::tho66::pyquante2::coulomb_repulsion(
                     za,
                     zb,
                     zc,
@@ -166,10 +160,10 @@ fn criterion_benchmark(c: &mut Criterion) {
     });
     let powers = [2, 1, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0];
     c.bench_function(
-        "tho66::pyquante2::pyquante2_coulomb_repulsion_2_1_0_1_0_0_1_0_0_0_1_0",
+        "tho66::pyquante2::coulomb_repulsion_2_1_0_1_0_0_1_0_0_0_1_0",
         move |b| {
             b.iter(|| {
-                rchem::integrals::tho66::pyquante2::pyquante2_coulomb_repulsion(
+                rchem::integrals::tho66::pyquante2::coulomb_repulsion(
                     za,
                     zb,
                     zc,

@@ -8,13 +8,23 @@
 
 _Ab initio_ quantum chemistry in Rust.
 
-To run the simple restricted Hartree-Fock program,
-``` sh
-cargo run
-```
-
 ## Dependencies
 
 - Rust toolchain (stable)
 - CMake and a C compiler (for `pyquante2` molecular integrals)
 - Python and [`basis-set-exchange`](https://pypi.org/project/basis-set-exchange/) (for reading basis sets)
+
+## Running
+
+To run the simple restricted Hartree-Fock program,
+``` sh
+$ cargo run
+```
+To run benchmarks for the different molecular integral implementations,
+``` sh
+$ cargo bench
+```
+To view the library documentation,
+``` sh
+$ cargo doc
+```
