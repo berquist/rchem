@@ -1,5 +1,5 @@
-pub mod os86;
-pub mod tho66;
+//! Access to molecular integrals, either via direct implementations or bindings.
 
-// TODO get rid of this re-export
-pub use os86::*;
+pub mod os86;
+pub mod simint;
+pub mod tho66;

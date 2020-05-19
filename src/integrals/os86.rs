@@ -1,3 +1,14 @@
+//! One- and two-electron integrals based on the Obara--Saika (OS) algorithm.
+//!
+//! Currently available integral types are:
+//! - Two-center one-electron overlap (S)
+//! - Two-center one-electron kinetic energy (T)
+//! - Two-center one-electron nuclear electron attraction (V)
+//! - Two-center one-electron multipole moment (M)
+//! - Four-center two-electron repulsion (ERI)
+//!
+//! Reference: [Obara, S.; Saika, A. Efficient recursive computation of molecular integrals over Cartesian Gaussian functions. _J. Chem. Phys._ **1986**, _84_, 3963-3974.](https://doi.org/10.1063/1.450106)
+
 use std::convert::TryInto;
 use std::f64::consts::PI;
 
@@ -13,14 +24,22 @@ fn remove_item<T: PartialEq>(v: &mut Vec<T>, item: &T) {
 
 #[derive(Clone, PartialEq)]
 enum X2kind {
-    S,  // overlap
-    T,  // kinetic energy
-    V,  // nuclear-electron attraction
-    M,  // multipole moment
-    L,  // angular momentum (not implemented)
-    E,  // electric field (not implemented)
-    J,  // spin-orbit (not implemented)
-    FC, // Fermi contact (not implemented)
+    /// overlap
+    S,
+    /// kinetic energy
+    T,
+    /// nuclear-electron attraction
+    V,
+    /// multipole moment
+    M,
+    /// angular momentum (not implemented yet)
+    L,
+    /// electric field (not implemented yet)
+    E,
+    /// spin-orbit (not implemented yet)
+    J,
+    /// Fermi contact (not implemented yet)
+    FC,
 }
 
 #[derive(Clone)]

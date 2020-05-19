@@ -1,3 +1,5 @@
+//! Representation of a basis set from the [Basis Set Exchange](https://github.com/MolSSI-BSE/basis_set_exchange) and functions for returning matrices of molecular integrals.
+
 #![allow(non_snake_case)]
 
 use std::collections::HashMap as Map;
@@ -172,6 +174,7 @@ impl CGTO {
     }
 }
 
+/// A representation of a basis set suitable for computing molecular integrals over.
 #[derive(Debug)]
 pub struct Basis {
     name: String,
@@ -220,7 +223,9 @@ fn overlap_pgto(a: &PGTO, b: &PGTO) -> f64 {
         b.powers[1],
         b.powers[2],
     ];
-    a.norm * b.norm * integrals::get_overlap(a.exponent, b.exponent, &a.origin, &b.origin, &powers)
+    a.norm
+        * b.norm
+        * integrals::os86::get_overlap(a.exponent, b.exponent, &a.origin, &b.origin, &powers)
 }
 
 fn overlap_cgto_left(a: &CGTO, b: &PGTO) -> f64 {
@@ -231,6 +236,7 @@ fn overlap_cgto_left(a: &CGTO, b: &PGTO) -> f64 {
         .sum()
 }
 
+/// Construct the overlap matrix over a contracted basis.
 pub fn S(basis_set: &Basis) -> Array<f64, Ix2> {
     let dim = basis_set.cgtos.len();
     let mut mat: Array<f64, _> = Array::zeros((dim, dim));
@@ -259,7 +265,9 @@ fn kinetic_pgto(a: &PGTO, b: &PGTO) -> f64 {
         b.powers[1],
         b.powers[2],
     ];
-    a.norm * b.norm * integrals::get_kinetic(a.exponent, b.exponent, &a.origin, &b.origin, &powers)
+    a.norm
+        * b.norm
+        * integrals::os86::get_kinetic(a.exponent, b.exponent, &a.origin, &b.origin, &powers)
 }
 
 fn kinetic_cgto_left(a: &CGTO, b: &PGTO) -> f64 {
@@ -270,6 +278,7 @@ fn kinetic_cgto_left(a: &CGTO, b: &PGTO) -> f64 {
         .sum()
 }
 
+/// Construct the kinetic energy matrix over a contracted basis.
 pub fn T(basis_set: &Basis) -> Array<f64, Ix2> {
     let dim = basis_set.cgtos.len();
     let mut mat: Array<f64, _> = Array::zeros((dim, dim));
@@ -300,7 +309,7 @@ fn nuclear_pgto(a: &PGTO, b: &PGTO, atomcoords: &[f64; 3]) -> f64 {
     ];
     a.norm
         * b.norm
-        * integrals::get_nuclear(
+        * integrals::os86::get_nuclear(
             a.exponent, b.exponent, &a.origin, &b.origin, atomcoords, &powers,
         )
 }
@@ -313,6 +322,7 @@ fn nuclear_cgto_left(a: &CGTO, b: &PGTO, atomcoords: &[f64; 3]) -> f64 {
         .sum()
 }
 
+/// Construct the nuclear-electron attraction matrix over a contracted basis.
 pub fn V(basis_set: &Basis, atomcoords: &[[f64; 3]], atomnos: &Vec<u64>) -> Array<f64, Ix2> {
     let dim = basis_set.cgtos.len();
     let natoms = atomcoords.len();
@@ -366,7 +376,7 @@ fn coulomb_pgto(a: &PGTO, b: &PGTO, c: &PGTO, d: &PGTO) -> f64 {
         d.powers[1] as i32,
         d.powers[2] as i32,
     ];
-    integrals::tho66::pyquante2::pyquante2_coulomb_repulsion(
+    integrals::tho66::pyquante2::coulomb_repulsion(
         a.exponent, b.exponent, c.exponent, d.exponent, &a.origin, &b.origin, &c.origin, &d.origin,
         a.norm, b.norm, c.norm, d.norm, &powers,
     )
@@ -374,12 +384,13 @@ fn coulomb_pgto(a: &PGTO, b: &PGTO, c: &PGTO, d: &PGTO) -> f64 {
     //     * b.norm
     //     * c.norm
     //     * d.norm
-    // * integrals::get_coulomb(
+    // * integrals::os86::get_coulomb(
     //     a.exponent, b.exponent, c.exponent, d.exponent, &a.origin, &b.origin, &c.origin,
     //     &d.origin, &powers,
     // )
 }
 
+/// Build the Coulomb and exchange matrices on the fly (integral direct).
 pub fn JK_direct(basis_set: &Basis, D: &Array<f64, Ix2>) -> (Array<f64, Ix2>, Array<f64, Ix2>) {
     let dim = basis_set.cgtos.len();
     let mut J: Array<f64, _> = Array::zeros((dim, dim));
@@ -423,6 +434,7 @@ pub fn JK_direct(basis_set: &Basis, D: &Array<f64, Ix2>) -> (Array<f64, Ix2>, Ar
     (J, K)
 }
 
+/// Build an explicit rank-4 tensor of all electron repulsion integrals.
 pub fn build_I(basis_set: &Basis) -> Array<f64, Ix4> {
     let dim = basis_set.cgtos.len();
     let mut I: Array<f64, _> = Array::zeros((dim, dim, dim, dim));
@@ -455,6 +467,7 @@ pub fn build_I(basis_set: &Basis) -> Array<f64, Ix4> {
     I
 }
 
+/// Build the Coulomb and exchange matrices from precomputed electron repulsion integrals.
 pub fn JK_inmem(I: &Array<f64, Ix4>, D: &Array<f64, Ix2>) -> (Array<f64, Ix2>, Array<f64, Ix2>) {
     let dim = I.shape()[0];
     let mut J: Array<f64, _> = Array::zeros((dim, dim));

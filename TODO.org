@@ -1,0 +1,8 @@
+* TODO Integrals
+** TODO write interface to libint https://github.com/berquist/rchem/issues/1
+** TODO write interface to libcint https://github.com/berquist/rchem/issues/2
+** TODO write interface to simint https://github.com/berquist/rchem/issues/5
+- The generated source is located at https://github.com/loriab/simint
+- There is also https://anaconda.org/psi4/simint; for CI, it would be advantageous to download the tarball directly from Anaconda Cloud, unpack it, and link directly, rather than going through conda. Though, in the future it might be better to use conda so it's easier to access =libint= and =libcint=.
+* TODO Python side
+** TODO Better interaction with Python for =basis_set_exchange= dependency https://github.com/berquist/rchem/issues/3
