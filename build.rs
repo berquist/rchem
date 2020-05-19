@@ -18,7 +18,7 @@ fn main() {
         .write_to_file(out_dir.join("bindings_libpyquante2.rs"))
         .expect("Couldn't write libpyquante2 bindings!");
 
-    let simint_base = "/home/eric/data/opt/apps/simint/0.7-g9.3.0-avxfma";
+    let simint_base = env::var("SIMINT_BASE_DIR").unwrap();
     println!("cargo:rustc-link-search={}/lib", simint_base);
     println!("cargo:rustc-link-lib=static=simint");
     let bindings_simint = bindgen::Builder::default()
