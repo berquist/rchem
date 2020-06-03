@@ -32,12 +32,14 @@ fn main() {
     let natom = frame.size();
     let atomcoords = frame.positions();
     let atomnos: Vec<_> = (0..natom).map(|i| frame.atom(i).atomic_number()).collect();
-    let basis_set = basis::Basis::new(&atomnos, &atomcoords, "STO-2G");
+    let basis_set = basis::Basis::new(&atomnos, &atomcoords, "STO-3G");
     // println!("{:#?}", basis_set);
 
     // let I = basis::build_I(&basis_set);
 
     let S = basis::S(&basis_set);
+    // TODO better way of getting this
+    let nbasis = S.shape()[0];
 
     let (overlap_eigvals, overlap_eigvecs) = S.eigh(UPLO::Upper).unwrap();
     let overlap_eigvals_inv_sqrt = vec_to_diag_mat(&overlap_eigvals)
@@ -63,8 +65,12 @@ fn main() {
     let max_iterations = 1024;
     let mut iteration = 0;
 
+    let mut J: Array<f64, _> = Array::zeros((nbasis, nbasis));
+    let mut K: Array<f64, _> = Array::zeros((nbasis, nbasis));
+    let mut F: Array<f64, _> = Array::zeros((nbasis, nbasis));
+
     while iteration < max_iterations {
-        let F = build_fock(&D, &H, &basis_set);
+        build_fock(&mut F, &mut J, &mut K, &D, &H, &basis_set);
         let F_prime = symm_orthog.t().dot(&F).dot(&symm_orthog);
         let (eps_vec, C_prime) = F_prime.eigh(UPLO::Upper).unwrap();
         let C = symm_orthog.dot(&C_prime);
@@ -102,12 +108,22 @@ fn calc_elec_energy(D: &Array<f64, Ix2>, H: &Array<f64, Ix2>, F: &Array<f64, Ix2
 }
 
 fn build_fock(
+    F: &mut Array<f64, Ix2>,
+    mut J: &mut Array<f64, Ix2>,
+    mut K: &mut Array<f64, Ix2>,
     D: &Array<f64, Ix2>,
     H: &Array<f64, Ix2>,
     basis_set: &basis::Basis,
-) -> Array<f64, Ix2> {
-    let (J, K) = basis::JK_direct(&basis_set, &D);
-    (2.0 * J - K) + H
+) {
+    basis::JK_direct(&mut J, &mut K, &basis_set, &D);
+    // F = (2.0_f64 * J - K) + H;
+    F.fill(0.0);
+    let nbasis = D.shape()[0];
+    for i in 0..nbasis {
+        for j in 0..nbasis {
+            F[[i, j]] += 2.0 * J[[i, j]] - K[[i, j]] + H[[i, j]];
+        }
+    }
 }
 
 // fn build_fock_inmem(

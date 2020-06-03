@@ -380,10 +380,15 @@ fn coulomb_pgto(a: &PGTO, b: &PGTO, c: &PGTO, d: &PGTO) -> f64 {
     // )
 }
 
-pub fn JK_direct(basis_set: &Basis, D: &Array<f64, Ix2>) -> (Array<f64, Ix2>, Array<f64, Ix2>) {
+pub fn JK_direct(
+    J: &mut Array<f64, Ix2>,
+    K: &mut Array<f64, Ix2>,
+    basis_set: &Basis,
+    D: &Array<f64, Ix2>,
+) {
+    J.fill(0.0);
+    K.fill(0.0);
     let dim = basis_set.cgtos.len();
-    let mut J: Array<f64, _> = Array::zeros((dim, dim));
-    let mut K: Array<f64, _> = Array::zeros((dim, dim));
     for mu in 0..dim {
         let a = &basis_set.cgtos[mu];
         for nu in 0..dim {
@@ -420,7 +425,6 @@ pub fn JK_direct(basis_set: &Basis, D: &Array<f64, Ix2>) -> (Array<f64, Ix2>, Ar
             }
         }
     }
-    (J, K)
 }
 
 pub fn build_I(basis_set: &Basis) -> Array<f64, Ix4> {
