@@ -275,7 +275,7 @@ impl SimintMultiShellpair {
         SimintMultiShellpair::from(&internal_multi_shellpair, sm)
     }
 
-    fn to(self) -> simint_multi_shellpair {
+    fn to(&self) -> simint_multi_shellpair {
         unsafe {
             simint_init();
         };
@@ -368,12 +368,28 @@ const NELEMENTS: [usize; OSTEI_MAXAM + 1] = [
 ];
 
 fn ostei_worksize(derorder: usize, maxam: usize) -> usize {
-    0
+    assert_eq!(derorder, 0);
+    NELEMENTS[maxam]
 }
 
 fn ostei_workmem(derorder: usize, maxam: usize) -> usize {
     // TODO get this machine's size of C double
     ostei_worksize(derorder, maxam) * 8
+}
+
+// ncomputed = simint_compute_eri(&ss_pair, &ss_pair, 0.0, work, targets+ntotal);
+fn compute_eri(
+    p: &SimintMultiShellpair,
+    q: &SimintMultiShellpair,
+    screen_tol: f64,
+    work: *mut f64,
+    integrals: *mut f64,
+) -> isize {
+    let internal_p = p.to();
+    let internal_q = q.to();
+    let pr = &internal_p as *const simint_multi_shellpair;
+    let qr = &internal_q as *const simint_multi_shellpair;
+    unsafe { simint_compute_eri(pr, qr, screen_tol, work, integrals) as isize }
 }
 
 #[cfg(test)]
@@ -470,11 +486,103 @@ mod tests {
             &p_shells_normalized,
             SimintScreenMethod::None,
         );
-        // let workmem = unsafe { simint_ostei_workmem(0, 1) };
-        // println!("{:?}", workmem);
-        // let layout = Layout::from_size_align()
+
+        let work_layout = std::alloc::Layout::from_size_align(
+            1000 * ostei_workmem(0, 1),
+            SIMINT_SIMD_ALIGN as usize,
+        )
+        .unwrap();
+        let targets_layout = std::alloc::Layout::from_size_align(
+            1000 * 7 * 7 * 7 * 7 * std::mem::size_of::<f64>(),
+            SIMINT_SIMD_ALIGN as usize,
+        )
+        .unwrap();
+        let work = unsafe { std::alloc::alloc(work_layout) as *mut f64 };
+        let targets = unsafe { std::alloc::alloc(targets_layout) as *mut f64 };
+        let mut ncomputed = 0;
+        let mut ntotal = 0;
+
+        // ncomputed = compute_eri(&ss_pair, &ss_pair, 0.0, work, unsafe {
+        //     targets.offset(ntotal)
+        // });
+        ncomputed = compute_eri(&ss_pair, &ss_pair, 0.0, work, targets);
+        println!("Computed {} contracted ssss integrals", ncomputed);
+        ntotal += ncomputed;
+
+        // ncomputed = compute_eri(&ps_pair, &ss_pair, 0.0, work, unsafe {
+        //     targets.offset(ntotal)
+        // });
+        // ncomputed *= 3;
+        // println!("Computed {} contracted psss integrals", ncomputed);
+        // ntotal += ncomputed;
+
+        // ncomputed = compute_eri(&ps_pair, &ps_pair, 0.0, work, unsafe {
+        //     targets.offset(ntotal)
+        // });
+        // ncomputed *= 9;
+        // println!("Computed {} contracted psps integrals", ncomputed);
+        // ntotal += ncomputed;
+
+        // ncomputed = compute_eri(&pp_pair, &ps_pair, 0.0, work, unsafe {
+        //     targets.offset(ntotal)
+        // });
+        // ncomputed *= 27;
+        // println!("Computed {} contracted ppps integrals", ncomputed);
+        // ntotal += ncomputed;
+
+        // ncomputed = compute_eri(&pp_pair, &pp_pair, 0.0, work, unsafe {
+        //     targets.offset(ntotal)
+        // });
+        // ncomputed *= 81;
+        // println!("Computed {} contracted pppp integrals", ncomputed);
+        // ntotal += ncomputed;
+
+        println!("++Computed {} contracted integrals", ntotal);
+
         unsafe {
+            std::alloc::dealloc(targets as *mut u8, targets_layout);
+            std::alloc::dealloc(work as *mut u8, work_layout);
             simint_finalize();
         };
     }
 }
+
+/*
+==67476== Thread 2 integrals::simin:
+==67476== Invalid write of size 8
+==67476==    at 0x484055B: memmove (vg_replace_strmem.c:1270)
+==67476==    by 0x124ADC: core::intrinsics::copy (intrinsics.rs:2063)
+==67476==    by 0x13EBF6: core::ptr::const_ptr::<impl *const T>::copy_to (const_ptr.rs:638)
+==67476==    by 0x15C833: rchem::integrals::simint::SimintMultiShellpair::to (simint.rs:296)
+==67476==    by 0x15D1EE: rchem::integrals::simint::compute_eri (simint.rs:388)
+==67476==    by 0x166216: rchem::integrals::simint::tests::example1 (simint.rs:508)
+==67476==    by 0x14B789: rchem::integrals::simint::tests::example1::{{closure}} (simint.rs:412)
+==67476==    by 0x14DEBD: core::ops::function::FnOnce::call_once (function.rs:232)
+==67476==    by 0xE9B25E: <alloc::boxed::Box<F> as core::ops::function::FnOnce<A>>::call_once (boxed.rs:1017)
+==67476==    by 0xEF03C6: __rust_maybe_catch_panic (lib.rs:86)
+==67476==    by 0xEB66BB: try<(),std::panic::AssertUnwindSafe<alloc::boxed::Box<FnOnce<()>>>> (panicking.rs:281)
+==67476==    by 0xEB66BB: catch_unwind<std::panic::AssertUnwindSafe<alloc::boxed::Box<FnOnce<()>>>,()> (panic.rs:394)
+==67476==    by 0xEB66BB: run_test_in_process (lib.rs:542)
+==67476==    by 0xEB66BB: test::run_test::run_test_inner::{{closure}} (lib.rs:451)
+==67476==    by 0xE8E485: std::sys_common::backtrace::__rust_begin_short_backtrace (backtrace.rs:130)
+==67476==  Address 0x0 is not stack'd, malloc'd or (recently) free'd
+==67476==
+==67476==
+==67476== Process terminating with default action of signal 11 (SIGSEGV): dumping core
+==67476==  Access not within mapped region at address 0x0
+==67476==    at 0x484055B: memmove (vg_replace_strmem.c:1270)
+==67476==    by 0x124ADC: core::intrinsics::copy (intrinsics.rs:2063)
+==67476==    by 0x13EBF6: core::ptr::const_ptr::<impl *const T>::copy_to (const_ptr.rs:638)
+==67476==    by 0x15C833: rchem::integrals::simint::SimintMultiShellpair::to (simint.rs:296)
+==67476==    by 0x15D1EE: rchem::integrals::simint::compute_eri (simint.rs:388)
+==67476==    by 0x166216: rchem::integrals::simint::tests::example1 (simint.rs:508)
+==67476==    by 0x14B789: rchem::integrals::simint::tests::example1::{{closure}} (simint.rs:412)
+==67476==    by 0x14DEBD: core::ops::function::FnOnce::call_once (function.rs:232)
+==67476==    by 0xE9B25E: <alloc::boxed::Box<F> as core::ops::function::FnOnce<A>>::call_once (boxed.rs:1017)
+==67476==    by 0xEF03C6: __rust_maybe_catch_panic (lib.rs:86)
+==67476==    by 0xEB66BB: try<(),std::panic::AssertUnwindSafe<alloc::boxed::Box<FnOnce<()>>>> (panicking.rs:281)
+==67476==    by 0xEB66BB: catch_unwind<std::panic::AssertUnwindSafe<alloc::boxed::Box<FnOnce<()>>>,()> (panic.rs:394)
+==67476==    by 0xEB66BB: run_test_in_process (lib.rs:542)
+==67476==    by 0xEB66BB: test::run_test::run_test_inner::{{closure}} (lib.rs:451)
+==67476==    by 0xE8E485: std::sys_common::backtrace::__rust_begin_short_backtrace (backtrace.rs:130)
+*/
