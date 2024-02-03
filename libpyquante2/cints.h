@@ -2,21 +2,21 @@
  *
  This program is part of the PyQuante quantum chemistry program suite.
 
- Copyright (c) 2004, Richard P. Muller. All Rights Reserved. 
+ Copyright (c) 2004, Richard P. Muller. All Rights Reserved.
 
  PyQuante version 1.2 and later is covered by the modified BSD
  license. Please see the file LICENSE that is part of this
- distribution. 
+ distribution.
  **************************************************************************/
-double fB(int i, int l1, int l2, double px, double ax, double bx, 
+double fB(int i, int l1, int l2, double px, double ax, double bx,
 	  int r, double g);
 double Bfunc(int i, int r, double g);
 double contr_coulomb(int ia, double *aexps, double *acoefs, double *anorms,
-			    double xa, double ya, double za, int la, int ma, int na, 
+			    double xa, double ya, double za, int la, int ma, int na,
 			    int ib, double *bexps, double *bcoefs, double *bnorms,
-			    double xb, double yb, double zb, int lb, int mb, int nb, 
+			    double xb, double yb, double zb, int lb, int mb, int nb,
 			    int ic, double *cexps, double *ccoefs, double *cnorms,
-			    double xc, double yc, double zc, int lc, int mc, int nc, 
+			    double xc, double yc, double zc, int lc, int mc, int nc,
 			    int id, double *dexps, double *dcoefs, double *dnorms,
 			    double xd, double yd, double zd, int ld, int md, int nd);
 
@@ -59,9 +59,9 @@ double *A_array(int l1, int l2, double PA, double PB,
 
 int fact(int n);
 int fact2(int n);
-double dist2(double x1, double y1, double z1, 
+double dist2(double x1, double y1, double z1,
 		    double x2, double y2, double z2);
-double dist(double x1, double y1, double z1, 
+double dist(double x1, double y1, double z1,
 		   double x2, double y2, double z2);
 double binomial_prefactor(int s, int ia, int ib, double xpa, double xpb);
 int binomial(int a, int b);
@@ -73,7 +73,7 @@ int ijkl2intindex(int i, int j, int k, int l);
 
 int fact_ratio2(int a, int b);
 
-double product_center_1D(double alphaa, double xa, 
+double product_center_1D(double alphaa, double xa,
 			 double alphab, double xb);
 
 double three_center_1D(double xi, int ai, double alphai,

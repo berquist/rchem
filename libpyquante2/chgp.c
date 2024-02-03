@@ -10,11 +10,11 @@
 
  This program is part of the PyQuante quantum chemistry program suite.
 
- Copyright (c) 2004, Richard P. Muller. All Rights Reserved. 
+ Copyright (c) 2004, Richard P. Muller. All Rights Reserved.
 
  PyQuante version 1.2 and later is covered by the modified BSD
  license. Please see the file LICENSE that is part of this
- distribution. 
+ distribution.
  *
  **********************************************************************/
 
@@ -216,7 +216,7 @@ double vrr(double xa, double ya, double za, double norma,
 	   int m){
   return vrr_recursive(xa,ya,za,norma,la,ma,na,alphaa,xb,yb,zb,normb,alphab,
 		       xc,yc,zc,normc,lc,mc,nc,alphac,xd,yd,zd,normd,alphad,m);
-} 
+}
 
 double vrr_nonrecursive(double xa, double ya, double za, double norma,
 	   int la, int ma, int na, double alphaa,
@@ -268,27 +268,27 @@ double vrr_nonrecursive(double xa, double ya, double za, double norma,
     Fgterms[im]=(2.*T*Fgterms[im+1]+exp(-T))/(2.*im+1);
 
   for (im=0; im<mtot+1; im++)
-    vrr_terms[iindex(0,0,0,0,0,0,im)] = 
+    vrr_terms[iindex(0,0,0,0,0,0,im)] =
       norma*normb*normc*normd*Kab*Kcd/sqrt(zeta+eta)*Fgterms[im];
 
   for (i=0; i<la; i++){
     for (im=0; im<mtot-i; im++) {
-      vrr_terms[iindex(i+1,0,0, 0,0,0, im)] = 
+      vrr_terms[iindex(i+1,0,0, 0,0,0, im)] =
 	(px-xa)*vrr_terms[iindex(i,0,0, 0,0,0, im)]
 	+ (wx-px)*vrr_terms[iindex(i,0,0, 0,0,0, im+1)];
-      
+
       if (i>0)
-	vrr_terms[iindex(i+1,0,0, 0,0,0, im)] += 
+	vrr_terms[iindex(i+1,0,0, 0,0,0, im)] +=
 	  i/2./zeta*( vrr_terms[iindex(i-1,0,0, 0,0,0, im)]
 		      - eta/(zeta+eta)*vrr_terms[iindex(i-1,0,0, 0,0,0, im+1)]);
     }
-  }  
+  }
 
 
   for (j=0; j<ma; j++){
     for (i=0; i<la+1; i++){
       for (im=0; im<mtot-i-j; im++){
-	vrr_terms[iindex(i,j+1,0, 0,0,0, im)] = 
+	vrr_terms[iindex(i,j+1,0, 0,0,0, im)] =
 	  (py-ya)*vrr_terms[iindex(i,j,0, 0,0,0, im)]
 	  + (wy-py)*vrr_terms[iindex(i,j,0, 0,0,0, im+1)];
 
@@ -305,11 +305,11 @@ double vrr_nonrecursive(double xa, double ya, double za, double norma,
     for (j=0; j<ma+1; j++){
       for (i=0; i<la+1; i++){
 	for (im=0; im<mtot-i-j-k; im++){
-	  vrr_terms[iindex(i,j,k+1, 0,0,0, im)] = 
+	  vrr_terms[iindex(i,j,k+1, 0,0,0, im)] =
 	    (pz-za)*vrr_terms[iindex(i,j,k, 0,0,0, im)]
 	    + (wz-pz)*vrr_terms[iindex(i,j,k, 0,0,0, im+1)];
 	  if (k>0)
-	    vrr_terms[iindex(i,j,k+1, 0,0,0, im)] += 
+	    vrr_terms[iindex(i,j,k+1, 0,0,0, im)] +=
 	      k/2./zeta*(vrr_terms[iindex(i,j,k-1, 0,0,0, im)]
 			 - eta/(zeta+eta)
 			 *vrr_terms[iindex(i,j,k-1, 0,0,0, im+1)]);
@@ -323,16 +323,16 @@ double vrr_nonrecursive(double xa, double ya, double za, double norma,
       for (j=0; j<ma+1; j++){
 	for (i=0; i<la+1; i++){
 	  for (im=0; im<mtot-i-j-k-q; im++){
-	    vrr_terms[iindex(i,j,k, q+1,0,0, im)] = 
+	    vrr_terms[iindex(i,j,k, q+1,0,0, im)] =
 	      (qx-xc)*vrr_terms[iindex(i,j,k, q,0,0, im)]
 	      + (wx-qx)*vrr_terms[iindex(i,j,k, q,0,0, im+1)];
 	    if (q>0)
-	      vrr_terms[iindex(i,j,k, q+1,0,0, im)] += 
+	      vrr_terms[iindex(i,j,k, q+1,0,0, im)] +=
 		q/2./eta*(vrr_terms[iindex(i,j,k, q-1,0,0, im)]
 			  - zeta/(zeta+eta)
 			  *vrr_terms[iindex(i,j,k, q-1,0,0, im+1)]);
 	    if (i>0)
-	      vrr_terms[iindex(i,j,k, q+1,0,0, im)] += 
+	      vrr_terms[iindex(i,j,k, q+1,0,0, im)] +=
 		i/2./(zeta+eta)*vrr_terms[iindex(i-1,j,k, q,0,0, im+1)];
 	  }
 	}
@@ -346,16 +346,16 @@ double vrr_nonrecursive(double xa, double ya, double za, double norma,
 	for (j=0; j<ma+1; j++){
 	  for (i=0; i<la+1; i++){
 	    for (im=0; im<mtot-i-j-k-q-r; im++){
-	      vrr_terms[iindex(i,j,k, q,r+1,0, im)] = 
+	      vrr_terms[iindex(i,j,k, q,r+1,0, im)] =
 		(qy-yc)*vrr_terms[iindex(i,j,k, q,r,0, im)]
 		+ (wy-qy)*vrr_terms[iindex(i,j,k, q,r,0, im+1)];
 	      if (r>0)
-		vrr_terms[iindex(i,j,k, q,r+1,0, im)] += 
+		vrr_terms[iindex(i,j,k, q,r+1,0, im)] +=
 		  r/2./eta*(vrr_terms[iindex(i,j,k, q,r-1,0, im)]
 			    - zeta/(zeta+eta)
 			    *vrr_terms[iindex(i,j,k, q,r-1,0, im+1)]);
 	      if (j>0)
-		vrr_terms[iindex(i,j,k, q,r+1,0, im)] += 
+		vrr_terms[iindex(i,j,k, q,r+1,0, im)] +=
 		  j/2./(zeta+eta)*vrr_terms[iindex(i,j-1,k,q,r,0,im+1)];
 	    }
 	  }
@@ -371,16 +371,16 @@ double vrr_nonrecursive(double xa, double ya, double za, double norma,
 	  for (j=0; j<ma+1; j++){
 	    for (i=0; i<la+1; i++){
 	      for (im=0; im<mtot-i-j-k-q-r-s; im++){
-		vrr_terms[iindex(i,j,k,q,r,s+1,im)] = 
+		vrr_terms[iindex(i,j,k,q,r,s+1,im)] =
 		  (qz-zc)*vrr_terms[iindex(i,j,k,q,r,s,im)]
 		  + (wz-qz)*vrr_terms[iindex(i,j,k,q,r,s,im+1)];
 		if (s>0)
-		  vrr_terms[iindex(i,j,k,q,r,s+1,im)] += 
+		  vrr_terms[iindex(i,j,k,q,r,s+1,im)] +=
 		    s/2./eta*(vrr_terms[iindex(i,j,k,q,r,s-1,im)]
 			      - zeta/(zeta+eta)
 			      *vrr_terms[iindex(i,j,k,q,r,s-1,im+1)]);
 		if (k>0)
-		  vrr_terms[iindex(i,j,k,q,r,s+1,im)] += 
+		  vrr_terms[iindex(i,j,k,q,r,s+1,im)] +=
 		    k/2./(zeta+eta)*vrr_terms[iindex(i,j,k-1,q,r,s,im+1)];
 	      }
 	    }
@@ -397,7 +397,7 @@ double vrr_nonrecursive(double xa, double ya, double za, double norma,
 
 
 /* These iindexing functions are wasteful: they simply allocate an array
-   of dimension MAXAM^6*mtot. Once this is working I'll look to 
+   of dimension MAXAM^6*mtot. Once this is working I'll look to
    actually implement the correct size array la*ma*na*lc*mc*nc*mtot */
 
 int iindex(int la, int ma, int na, int lc, int mc, int nc, int m){
@@ -439,7 +439,7 @@ double vrr_recursive(double xa, double ya, double za, double norma,
     val = (qz-zc)*vrr(xa,ya,za,norma,la,ma,na,alphaa,
 		      xb,yb,zb,normb,alphab,
 		      xc,yc,zc,normc,lc,mc,nc-1,alphac,
-		      xd,yd,zd,normd,alphad,m) 
+		      xd,yd,zd,normd,alphad,m)
       + (wz-qz)*vrr(xa,ya,za,norma,la,ma,na,alphaa,
 		    xb,yb,zb,normb,alphab,
 		    xc,yc,zc,normc,lc,mc,nc-1,alphac,
@@ -449,7 +449,7 @@ double vrr_recursive(double xa, double ya, double za, double norma,
 				 xb,yb,zb,normb,alphab,
 				 xc,yc,zc,normc,lc,mc,nc-2,alphac,
 				 xd,yd,zd,normd,alphad,m)
-			     -zeta/(zeta+eta)* 
+			     -zeta/(zeta+eta)*
 			     vrr(xa,ya,za,norma,la,ma,na,alphaa,
 				 xb,yb,zb,normb,alphab,
 				 xc,yc,zc,normc,lc,mc,nc-2,alphac,
@@ -464,7 +464,7 @@ double vrr_recursive(double xa, double ya, double za, double norma,
     val = (qy-yc)*vrr(xa,ya,za,norma,la,ma,na,alphaa,
 		      xb,yb,zb,normb,alphab,
 		      xc,yc,zc,normc,lc,mc-1,nc,alphac,
-		      xd,yd,zd,normd,alphad,m) 
+		      xd,yd,zd,normd,alphad,m)
       + (wy-qy)*vrr(xa,ya,za,norma,la,ma,na,alphaa,
 		    xb,yb,zb,normb,alphab,
 		    xc,yc,zc,normc,lc,mc-1,nc,alphac,
@@ -474,7 +474,7 @@ double vrr_recursive(double xa, double ya, double za, double norma,
 				 xb,yb,zb,normb,alphab,
 				 xc,yc,zc,normc,lc,mc-2,nc,alphac,
 				 xd,yd,zd,normd,alphad,m)
-			     -zeta/(zeta+eta)* 
+			     -zeta/(zeta+eta)*
 			     vrr(xa,ya,za,norma,la,ma,na,alphaa,
 				 xb,yb,zb,normb,alphab,
 				 xc,yc,zc,normc,lc,mc-2,nc,alphac,
@@ -489,7 +489,7 @@ double vrr_recursive(double xa, double ya, double za, double norma,
     val = (qx-xc)*vrr(xa,ya,za,norma,la,ma,na,alphaa,
 		      xb,yb,zb,normb,alphab,
 		      xc,yc,zc,normc,lc-1,mc,nc,alphac,
-		      xd,yd,zd,normd,alphad,m) 
+		      xd,yd,zd,normd,alphad,m)
       + (wx-qx)*vrr(xa,ya,za,norma,la,ma,na,alphaa,
 		    xb,yb,zb,normb,alphab,
 		    xc,yc,zc,normc,lc-1,mc,nc,alphac,
@@ -499,7 +499,7 @@ double vrr_recursive(double xa, double ya, double za, double norma,
 				 xb,yb,zb,normb,alphab,
 				 xc,yc,zc,normc,lc-2,mc,nc,alphac,
 				 xd,yd,zd,normd,alphad,m)
-			     -zeta/(zeta+eta)* 
+			     -zeta/(zeta+eta)*
 			     vrr(xa,ya,za,norma,la,ma,na,alphaa,
 				 xb,yb,zb,normb,alphab,
 				 xc,yc,zc,normc,lc-2,mc,nc,alphac,
@@ -514,18 +514,18 @@ double vrr_recursive(double xa, double ya, double za, double norma,
     val = (pz-za)*vrr(xa,ya,za,norma,la,ma,na-1,alphaa,
 		      xb,yb,zb,normb,alphab,
 		      xc,yc,zc,normc,lc,mc,nc,alphac,
-		      xd,yd,zd,normd,alphad,m) 
+		      xd,yd,zd,normd,alphad,m)
       + (wz-pz)*vrr(xa,ya,za,norma,la,ma,na-1,alphaa,
 		    xb,yb,zb,normb,alphab,
 		    xc,yc,zc,normc,lc,mc,nc,alphac,
 		    xd,yd,zd,normd,alphad,m+1);
-        
+
     if (na > 1)
       val +=  0.5*(na-1)/zeta*(vrr(xa,ya,za,norma,la,ma,na-2,alphaa,
 				   xb,yb,zb,normb,alphab,
 				   xc,yc,zc,normc,lc,mc,nc,alphac,
 				   xd,yd,zd,normd,alphad,m)
-			       -eta/(zeta+eta)* 
+			       -eta/(zeta+eta)*
 			       vrr(xa,ya,za,norma,la,ma,na-2,alphaa,
 				   xb,yb,zb,normb,alphab,
 				   xc,yc,zc,normc,lc,mc,nc,alphac,
@@ -535,7 +535,7 @@ double vrr_recursive(double xa, double ya, double za, double norma,
     val = (py-ya)*vrr(xa,ya,za,norma,la,ma-1,na,alphaa,
 		      xb,yb,zb,normb,alphab,
 		      xc,yc,zc,normc,lc,mc,nc,alphac,
-		      xd,yd,zd,normd,alphad,m) 
+		      xd,yd,zd,normd,alphad,m)
       + (wy-py)*vrr(xa,ya,za,norma,la,ma-1,na,alphaa,
 		    xb,yb,zb,normb,alphab,
 		    xc,yc,zc,normc,lc,mc,nc,alphac,
@@ -545,7 +545,7 @@ double vrr_recursive(double xa, double ya, double za, double norma,
 				   xb,yb,zb,normb,alphab,
 				   xc,yc,zc,normc,lc,mc,nc,alphac,
 				   xd,yd,zd,normd,alphad,m)
-			       -eta/(zeta+eta)* 
+			       -eta/(zeta+eta)*
 			       vrr(xa,ya,za,norma,la,ma-2,na,alphaa,
 				   xb,yb,zb,normb,alphab,
 				   xc,yc,zc,normc,lc,mc,nc,alphac,
@@ -555,7 +555,7 @@ double vrr_recursive(double xa, double ya, double za, double norma,
     val = (px-xa)*vrr(xa,ya,za,norma,la-1,ma,na,alphaa,
 		      xb,yb,zb,normb,alphab,
 		      xc,yc,zc,normc,lc,mc,nc,alphac,
-		      xd,yd,zd,normd,alphad,m) 
+		      xd,yd,zd,normd,alphad,m)
       + (wx-px)*vrr(xa,ya,za,norma,la-1,ma,na,alphaa,
 		    xb,yb,zb,normb,alphab,
 		    xc,yc,zc,normc,lc,mc,nc,alphac,
@@ -565,14 +565,14 @@ double vrr_recursive(double xa, double ya, double za, double norma,
 				   xb,yb,zb,normb,alphab,
 				   xc,yc,zc,normc,lc,mc,nc,alphac,
 				   xd,yd,zd,normd,alphad,m)
-			       -eta/(zeta+eta)* 
+			       -eta/(zeta+eta)*
 			       vrr(xa,ya,za,norma,la-2,ma,na,alphaa,
 				   xb,yb,zb,normb,alphab,
 				   xc,yc,zc,normc,lc,mc,nc,alphac,
 				   xd,yd,zd,normd,alphad,m+1) );
     return val;
   }
-  
+
   rab2 = dist2(xa,ya,za,xb,yb,zb);
   Kab = sqrt(2.)*pow(M_PI,1.25)/(alphaa+alphab)
     *exp(-alphaa*alphab/(alphaa+alphab)*rab2);
@@ -589,4 +589,3 @@ double vrr_recursive(double xa, double ya, double za, double norma,
 #undef EPS
 #undef FPMIN
 #undef SMALL
-
