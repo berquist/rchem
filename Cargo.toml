@@ -7,7 +7,7 @@ build = "build.rs"
 
 [dependencies]
 approx = "0.3"
-factorial = { version = "0.2", path = "/home/eric/development/forks/rust/factorial" }
+factorial = { git = "https://github.com/berquist/factorial", rev = "0500498cdcc4f19d04111e3b3fc085c31a627300" }
 num-integer = "0.1"
 # num-traits = "*"
 arrayvec = "0.4"
