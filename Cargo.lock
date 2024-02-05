@@ -143,7 +143,7 @@ version = "0.2.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9c505375a294ec7cf79430c4ccb91ee1fab5f6390da3a264932fd303832a2de7"
 dependencies = [
- "num-complex",
+ "num-complex 0.2.4",
  "num-traits",
  "rand",
  "serde",
@@ -483,7 +483,7 @@ checksum = "4bce9d3464fe3be72376bcbe3dc4df22dd368ca228b62e8415d2c7b09bb58677"
 dependencies = [
  "lapacke-sys",
  "libc",
- "num-complex",
+ "num-complex 0.2.4",
 ]
 
 [[package]]
@@ -541,7 +541,17 @@ version = "0.1.15"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "dcad67dcec2d58ff56f6292582377e6921afdf3bfbd533e26fb8900ae575e002"
 dependencies = [
- "rawpointer",
+ "rawpointer 0.1.0",
+]
+
+[[package]]
+name = "matrixmultiply"
+version = "0.3.8"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7574c1cf36da4798ab73da5b215bbf444f50718207754cb522201d78d1cd0ff2"
+dependencies = [
+ "autocfg",
+ "rawpointer 0.2.1",
 ]
 
 [[package]]
@@ -565,9 +575,22 @@ dependencies = [
  "blas-src 0.2.1",
  "cblas-sys",
  "itertools 0.7.11",
- "matrixmultiply",
- "num-complex",
+ "matrixmultiply 0.1.15",
+ "num-complex 0.2.4",
  "num-traits",
+]
+
+[[package]]
+name = "ndarray"
+version = "0.15.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "adb12d4e967ec485a5f71c6311fe28158e9d6f4bc4a447b474184d0f91a8fa32"
+dependencies = [
+ "matrixmultiply 0.3.8",
+ "num-complex 0.4.4",
+ "num-integer",
+ "num-traits",
+ "rawpointer 0.2.1",
 ]
 
 [[package]]
@@ -580,8 +603,8 @@ dependencies = [
  "cauchy",
  "lapack-src",
  "lapacke",
- "ndarray",
- "num-complex",
+ "ndarray 0.12.1",
+ "num-complex 0.2.4",
  "num-traits",
  "rand",
 ]
@@ -621,6 +644,15 @@ dependencies = [
  "num-traits",
  "rand",
  "serde",
+]
+
+[[package]]
+name = "num-complex"
+version = "0.4.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1ba157ca0885411de85d6ca030ba7e2a83a28636056c7c699b07c8b6f7383214"
+dependencies = [
+ "num-traits",
 ]
 
 [[package]]
@@ -767,6 +799,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ebac11a9d2e11f2af219b8b8d833b76b1ea0e054aa0e8d8e9e4cbde353bdf019"
 
 [[package]]
+name = "rawpointer"
+version = "0.2.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "60a357793950651c4ed0f3f52338f53b2f809f32d83a07f72909fa13e4c6c1e3"
+
+[[package]]
 name = "rayon"
 version = "1.8.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -800,7 +838,7 @@ dependencies = [
  "cpython",
  "criterion",
  "factorial",
- "ndarray",
+ "ndarray 0.15.6",
  "ndarray-linalg",
  "num-integer",
  "serde",
