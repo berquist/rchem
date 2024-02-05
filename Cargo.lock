@@ -4,17 +4,6 @@ version = 3
 
 [[package]]
 name = "GSL"
-version = "1.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7830156ea389bcbbdc8f01bf140b609b892bf7cbd0ec6ccf9957ea2be6f25ad3"
-dependencies = [
- "c_vec",
- "libc",
- "pkg-config",
-]
-
-[[package]]
-name = "GSL"
 version = "7.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "db3943d5a15b5c46e991124abee6a1bc89c7c9ffb25dbb8aeb4eab926fd9b307"
@@ -136,7 +125,7 @@ name = "boys"
 version = "0.1.1"
 source = "git+https://github.com/berquist/boys#15361a8e0812cbdfca478abb9152e1b04513840e"
 dependencies = [
- "GSL 7.0.0",
+ "GSL",
 ]
 
 [[package]]
@@ -144,12 +133,6 @@ name = "byteorder"
 version = "1.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1fd0f2584146f6f2ef48085050886acf353beff7305ebd1ae69500e27c67f64b"
-
-[[package]]
-name = "c_vec"
-version = "1.0.12"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "aa9e1d9f7d49e289f36f19effbf3d5a5e30163ecf9c7a3c9be94d5374dec5b9a"
 
 [[package]]
 name = "cast"
@@ -743,7 +726,7 @@ dependencies = [
 name = "rchem"
 version = "0.1.0"
 dependencies = [
- "GSL 1.1.0",
+ "GSL",
  "approx",
  "arrayvec",
  "bindgen",
