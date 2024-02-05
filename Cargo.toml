@@ -25,7 +25,7 @@ bindgen = "0.53"
 cmake = "0.1"
 
 [dev-dependencies]
-criterion = "0.2"
+criterion = "0.5"
 
 [[bench]]
 name = "bench_rchem"
