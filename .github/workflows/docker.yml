@@ -32,7 +32,6 @@ jobs:
         with:
           file: Containerfile
           push: true
-          load: true
           tags: ${{ steps.meta.outputs.tags }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
