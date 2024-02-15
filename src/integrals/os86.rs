@@ -69,10 +69,10 @@ fn apply_os4(x: X4) -> Vec<X4> {
         _ => unreachable!(),
     };
 
-    let mut bra = ArrayVec::<[usize; 2]>::new();
+    let mut bra = ArrayVec::<usize, 2>::new();
     bra.push(0);
     bra.push(1);
-    let mut ket = ArrayVec::<[usize; 2]>::new();
+    let mut ket = ArrayVec::<usize, 2>::new();
     ket.push(2);
     ket.push(3);
 
@@ -274,7 +274,7 @@ fn get_r12_squared(r1: &[f64; 3], r2: &[f64; 3]) -> f64 {
 
 fn find_fun_to_lower(q: &Vec<i8>, n: usize) -> Result<usize, bool> {
     // Determine the total angular momentum on each center.
-    let mut l = ArrayVec::<[i8; 12]>::new();
+    let mut l = ArrayVec::<i8, 12>::new();
     for i in 0..n {
         l.push(q[i * 3] + q[i * 3 + 1] + q[i * 3 + 2])
     }
@@ -366,7 +366,7 @@ fn apply_os2(mut x: X2, kind: X2kind) -> Vec<X2> {
         _ => unreachable!(),
     };
 
-    let mut pre = ArrayVec::<[u8; 12]>::new();
+    let mut pre = ArrayVec::<u8, 12>::new();
     pre.push(i1);
 
     if kind == X2kind::S {
@@ -415,7 +415,7 @@ fn apply_os2(mut x: X2, kind: X2kind) -> Vec<X2> {
     let (a, b) = match fun {
         2 => (2, 2),
         _ => {
-            let mut l = ArrayVec::<[usize; 2]>::new();
+            let mut l = ArrayVec::<usize, 2>::new();
             l.push(0);
             l.push(1);
             // remove_item(&mut l, &fun);
