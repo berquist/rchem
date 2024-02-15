@@ -10,7 +10,7 @@ approx = "0.5"
 factorial = { git = "https://github.com/berquist/factorial", rev = "0500498cdcc4f19d04111e3b3fc085c31a627300" }
 num-integer = "0.1"
 # num-traits = "*"
-arrayvec = "0.4"
+arrayvec = "0.7"
 GSL = "7.0"
 cpython = "0.2"
 serde = { version = "1.0", features = [ "derive" ] }
