@@ -259,12 +259,13 @@ dependencies = [
 
 [[package]]
 name = "cpython"
-version = "0.2.1"
+version = "0.7.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b489034e723e7f5109fecd19b719e664f89ef925be785885252469e9822fa940"
+checksum = "3052106c29da7390237bc2310c1928335733b286287754ea85e6093d2495280e"
 dependencies = [
  "libc",
  "num-traits",
+ "paste",
  "python3-sys",
 ]
 
@@ -700,9 +701,9 @@ dependencies = [
 
 [[package]]
 name = "python3-sys"
-version = "0.2.1"
+version = "0.7.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "61e4aac43f833fd637e429506cb2ac9d7df672c4b68f2eaaa163649b7fdc0444"
+checksum = "49f8b50d72fb3015735aa403eebf19bbd72c093bfeeae24ee798be5f2f1aab52"
 dependencies = [
  "libc",
  "regex",
