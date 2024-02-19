@@ -169,22 +169,20 @@ checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
 
 [[package]]
 name = "chemfiles"
-version = "0.9.0"
+version = "0.10.41"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c329ce061b3179476aeae43272075e5f9ca151d86a5160ba704106371315201e"
+checksum = "2c2765083950cdde2b21e491edf458c59ab247d27336e9637e3cc7bead724aff"
 dependencies = [
  "chemfiles-sys",
- "libc",
 ]
 
 [[package]]
 name = "chemfiles-sys"
-version = "0.9.3"
+version = "0.10.41"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e261b889a32eb27fb6ce3cd605fc060a094c4afcb6dc6b85a0c8748425626d8c"
+checksum = "00b42b868610adae00ecc6af80edc12b25353b0d125b13d30417207bf5072a78"
 dependencies = [
  "cmake",
- "libc",
 ]
 
 [[package]]
