@@ -12,7 +12,7 @@ num-integer = "0.1"
 # num-traits = "*"
 arrayvec = "0.7"
 GSL = "7.0"
-cpython = "0.2"
+cpython = "0.7"
 serde = { version = "1.0", features = [ "derive" ] }
 serde_json = "1.0"
 chemfiles = "0.10"
