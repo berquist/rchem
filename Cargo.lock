@@ -105,7 +105,7 @@ checksum = "ed570934406eb16438a4e976b1b4500774099c13b8cb96eec99f620f05090ddf"
 [[package]]
 name = "boys"
 version = "0.1.1"
-source = "git+https://github.com/berquist/boys#5acd3c34b0e95c807adf2b992830452c205b84d8"
+source = "git+https://github.com/berquist/boys#b3698fab8bedb72b56417365de7095b96d3718fa"
 dependencies = [
  "GSL",
 ]
