@@ -265,9 +265,9 @@ dependencies = [
 
 [[package]]
 name = "cpython"
-version = "0.7.1"
+version = "0.7.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3052106c29da7390237bc2310c1928335733b286287754ea85e6093d2495280e"
+checksum = "43b398a2c65baaf5892f10bb69b52508bf7a993380cc4ecd3785aaebb5c79389"
 dependencies = [
  "libc",
  "num-traits",
