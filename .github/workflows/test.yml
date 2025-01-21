@@ -31,6 +31,7 @@ jobs:
           rm "${HOME}"/.cargo/bin/cargo-fmt
           rm "${HOME}"/.cargo/bin/rust-analyzer
           rm "${HOME}"/.cargo/bin/rustfmt
+      - run: sudo apt-get install -y --no-install-recommends libgsl-dev
       - run: rustup update ${{ matrix.toolchain }} && rustup default ${{ matrix.toolchain }}
       - run: cargo build --verbose
       - run: cargo test --verbose
