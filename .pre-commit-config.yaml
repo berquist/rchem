@@ -13,8 +13,18 @@ repos:
       - id: fix-byte-order-marker
       - id: check-merge-conflict
       - id: check-toml
+      - id: check-yaml
       - id: check-added-large-files
   - repo: https://github.com/Mateusz-Grzelinski/actionlint-py
-    rev: "v1.7.5.21"
+    rev: "v1.7.7.23"
     hooks:
       - id: actionlint
+  - repo: https://github.com/adrienverge/yamllint
+    rev: "v1.35.1"
+    hooks:
+      - id: yamllint
+  - repo: https://github.com/woodruffw/zizmor-pre-commit
+    rev: v1.2.2
+    hooks:
+      - id: zizmor
+        args: [--persona=pedantic]
