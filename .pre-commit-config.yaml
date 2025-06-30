@@ -21,6 +21,10 @@ repos:
       - id: actionlint
         additional_dependencies:
           - "github.com/wasilibs/go-shellcheck/cmd/shellcheck@v0.10.0"
+  - repo: https://github.com/google/yamlfmt
+    rev: "v0.17.2"
+    hooks:
+      - id: yamlfmt
   - repo: https://github.com/adrienverge/yamllint
     rev: "v1.37.1"
     hooks:
