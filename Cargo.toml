@@ -7,7 +7,7 @@ build = "build.rs"
 
 [dependencies]
 approx = "0.5"
-factorial = { git = "https://github.com/berquist/factorial", rev = "0500498cdcc4f19d04111e3b3fc085c31a627300" }
+factorial = { git = "https://github.com/berquist/factorial", rev = "3b33d3e971f771b60f8151aae57db824600d9292" }
 num-integer = "0.1"
 # num-traits = "*"
 arrayvec = "0.7"
