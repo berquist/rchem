@@ -329,8 +329,8 @@ checksum = "48c757948c5ede0e46177b7add2e67155f70e33c07fea8284df6576da70b3719"
 
 [[package]]
 name = "factorial"
-version = "0.2.1"
-source = "git+https://github.com/berquist/factorial?rev=0500498cdcc4f19d04111e3b3fc085c31a627300#0500498cdcc4f19d04111e3b3fc085c31a627300"
+version = "0.2.0"
+source = "git+https://github.com/berquist/factorial?rev=3b33d3e971f771b60f8151aae57db824600d9292#3b33d3e971f771b60f8151aae57db824600d9292"
 dependencies = [
  "num-traits",
 ]
