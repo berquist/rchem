@@ -16,7 +16,7 @@ repos:
       - id: check-yaml
       - id: check-added-large-files
   - repo: https://github.com/google/yamlfmt
-    rev: "v0.18.1"
+    rev: "v0.19.0"
     hooks:
       - id: yamlfmt
   - repo: https://github.com/adrienverge/yamllint
