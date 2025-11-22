@@ -16,7 +16,7 @@ cpython = "0.7"
 serde = { version = "1.0", features = [ "derive" ] }
 serde_json = "1.0"
 chemfiles = "0.10"
-ndarray = "0.16"
+ndarray = "0.17"
 ndarray-linalg = { version = "0.17", features = [ "netlib" ] }
 boys = { version = "0.1", git = "https://github.com/berquist/boys" }
 
