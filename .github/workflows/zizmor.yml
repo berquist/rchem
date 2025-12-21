@@ -17,10 +17,9 @@ jobs:
     name: zizmor latest via PyPI
     runs-on: ubuntu-latest
     permissions:
-      security-events: write
-      # required for workflows in private repositories
-      contents: read
-      actions: read
+      security-events: write  # required for GitHub to present SARIF results
+      contents: read  # required for workflows in private repositories
+      actions: read  # required for reading workflow definition files
     steps:
       - name: Checkout repository
         uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8  # v6
