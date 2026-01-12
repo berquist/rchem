@@ -503,9 +503,9 @@ dependencies = [
 
 [[package]]
 name = "ndarray-linalg"
-version = "0.18.0"
+version = "0.18.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "264d4af20161410ca6e57eb54f2cbe734de57fb9764860c21b845bb31ec92b54"
+checksum = "eb0783188ff249ab498417e0477f7fade3b312d1d287314ca76de570d9a83ee0"
 dependencies = [
  "cauchy",
  "katexit",
