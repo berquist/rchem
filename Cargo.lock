@@ -75,9 +75,9 @@ checksum = "f2032f911046de80f0a198e0901378627c33f59ea0ac00e363d481118bd70a53"
 
 [[package]]
 name = "bindgen"
-version = "0.73.0"
+version = "0.73.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bc28bda9791f9d907d05b23533298ba26af0e9e75c3f32044569707afbca17e0"
+checksum = "54be9a169b85a1bef39252af30bb6246a31b23c7e0f6a162520dd869f8dad33c"
 dependencies = [
  "bitflags",
  "cexpr",
@@ -89,7 +89,7 @@ dependencies = [
  "regex",
  "rustc-hash",
  "shlex 2.0.1",
- "syn 3.0.0",
+ "syn 2.0.117",
 ]
 
 [[package]]
