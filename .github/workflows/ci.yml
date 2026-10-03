@@ -12,9 +12,13 @@ concurrency:
 
 jobs:
   prechecks:
-    uses: ./.github/workflows/pre-commit.yml
+    uses: $/.github/workflows/pre-commit.yml
   separate-zizmor:
-    uses: ./.github/workflows/zizmor.yml
+    uses: $/.github/workflows/zizmor.yml
+    permissions:
+      actions: read  # only needed for private or internal repos
+      contents: read  # only needed for private or internal repos
+      security-events: write  # for writing results
   all-prechecks:
     name: CI precheck success
     needs: [prechecks, separate-zizmor]
@@ -24,7 +28,7 @@ jobs:
         run: "true"
   unit-tests:
     needs: [all-prechecks]
-    uses: ./.github/workflows/test.yml
+    uses: $/.github/workflows/test.yml
   all:
     name: CI success
     needs: [unit-tests]
