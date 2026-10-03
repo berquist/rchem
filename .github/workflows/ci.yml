@@ -22,7 +22,7 @@ jobs:
   all-prechecks:
     name: CI precheck success
     needs: [prechecks, separate-zizmor]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     steps:
       - name: Success
         run: "true"
@@ -32,7 +32,7 @@ jobs:
   all:
     name: CI success
     needs: [unit-tests]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     steps:
       - name: Success
         run: "true"
